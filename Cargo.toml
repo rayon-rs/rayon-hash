@@ -1,0 +1,7 @@
+[package]
+authors = ["Josh Stone <cuviper@gmail.com>"]
+name = "rayon-hash"
+version = "0.1.0"
+
+[dependencies]
+rayon = "0.8"
