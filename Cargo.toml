@@ -4,5 +4,7 @@ name = "rayon-hash"
 version = "0.1.0"
 
 [dependencies]
-rand = "0.3"
 rayon = "0.8"
+
+[dev-dependencies]
+rand = "0.3"
