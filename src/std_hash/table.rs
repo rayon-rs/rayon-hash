@@ -20,6 +20,12 @@ use ptr::{self, Unique, Shared};
 
 use self::BucketState::*;
 
+#[path="../par/table.rs"]
+pub mod par;
+
+pub use self::par::*;
+
+
 /// Integer type used for stored hash values.
 ///
 /// No more than bit_width(usize) bits are needed to select a bucket.
