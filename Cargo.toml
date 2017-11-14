@@ -2,6 +2,12 @@
 authors = ["Josh Stone <cuviper@gmail.com>"]
 name = "rayon-hash"
 version = "0.1.0"
+repository = "https://github.com/rayon-rs/rayon-hash"
+documentation = "https://docs.rs/rayon-hash/"
+keywords = ["parallel", "iterator", "hash", "map", "set"]
+categories = ["concurrency", "data-structures"]
+description = "HashMap and HashSet with support for Rayon parallel iterators"
+license = "Apache-2.0/MIT"
 
 [dependencies]
 rayon = "0.9"
