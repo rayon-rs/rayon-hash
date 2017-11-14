@@ -269,7 +269,7 @@ const DISPLACEMENT_THRESHOLD: usize = 128;
 /// # Examples
 ///
 /// ```
-/// use std::collections::HashMap;
+/// use rayon_hash::HashMap;
 ///
 /// // type inference lets us omit an explicit type signature (which
 /// // would be `HashMap<&str, &str>` in this example).
@@ -310,7 +310,7 @@ const DISPLACEMENT_THRESHOLD: usize = 128;
 /// their values:
 ///
 /// ```
-/// use std::collections::HashMap;
+/// use rayon_hash::HashMap;
 ///
 /// // type inference lets us omit an explicit type signature (which
 /// // would be `HashMap<&str, u8>` in this example).
@@ -348,7 +348,7 @@ const DISPLACEMENT_THRESHOLD: usize = 128;
 /// [`fnv`]: https://crates.io/crates/fnv
 ///
 /// ```
-/// use std::collections::HashMap;
+/// use rayon_hash::HashMap;
 ///
 /// #[derive(Hash, Eq, PartialEq, Debug)]
 /// struct Viking {
@@ -379,7 +379,7 @@ const DISPLACEMENT_THRESHOLD: usize = 128;
 /// A `HashMap` with fixed list of elements can be initialized from an array:
 ///
 /// ```
-/// use std::collections::HashMap;
+/// use rayon_hash::HashMap;
 ///
 /// fn main() {
 ///     let timber_resources: HashMap<&str, i32> =
@@ -599,7 +599,7 @@ impl<K: Hash + Eq, V> HashMap<K, V, RandomState> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     /// let mut map: HashMap<&str, isize> = HashMap::new();
     /// ```
     #[inline]
@@ -616,7 +616,7 @@ impl<K: Hash + Eq, V> HashMap<K, V, RandomState> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     /// let mut map: HashMap<&str, isize> = HashMap::with_capacity(10);
     /// ```
     #[inline]
@@ -643,8 +643,8 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::RandomState;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
     /// let mut map = HashMap::with_hasher(s);
@@ -674,8 +674,8 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::RandomState;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
     /// let mut map = HashMap::with_capacity_and_hasher(10, s);
@@ -700,8 +700,8 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::RandomState;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::RandomState;
     ///
     /// let hasher = RandomState::new();
     /// let map: HashMap<isize, isize> = HashMap::with_hasher(hasher);
@@ -720,7 +720,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     /// let map: HashMap<isize, isize> = HashMap::with_capacity(100);
     /// assert!(map.capacity() >= 100);
     /// ```
@@ -749,7 +749,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     /// let mut map: HashMap<&str, isize> = HashMap::new();
     /// map.reserve(10);
     /// ```
@@ -827,7 +827,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<isize, isize> = HashMap::with_capacity(100);
     /// map.insert(1, 2);
@@ -876,7 +876,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -898,7 +898,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -920,7 +920,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     ///
@@ -947,7 +947,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -970,7 +970,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -996,7 +996,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut letters = HashMap::new();
     ///
@@ -1024,7 +1024,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// assert_eq!(a.len(), 0);
@@ -1041,7 +1041,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// assert!(a.is_empty());
@@ -1060,7 +1060,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// a.insert(1, "a");
@@ -1085,7 +1085,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// a.insert(1, "a");
@@ -1110,7 +1110,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1138,7 +1138,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1165,7 +1165,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1197,7 +1197,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// assert_eq!(map.insert(37, "a"), None);
@@ -1227,7 +1227,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1253,7 +1253,7 @@ impl<K, V, S> HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<isize, isize> = (0..8).map(|x|(x, x*10)).collect();
     /// map.retain(|&k, _| k % 2 == 0);
@@ -1658,7 +1658,7 @@ impl<K, V, S> IntoIterator for HashMap<K, V, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -1962,7 +1962,7 @@ impl<'a, K, V> Entry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -1986,7 +1986,7 @@ impl<'a, K, V> Entry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, String> = HashMap::new();
     /// let s = "hoho".to_string();
@@ -2007,7 +2007,7 @@ impl<'a, K, V> Entry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// assert_eq!(map.entry("poneyland").key(), &"poneyland");
@@ -2027,7 +2027,7 @@ impl<'a, K, V> Entry<'a, K, V> {
     ///
     /// ```
     /// #![feature(entry_and_modify)]
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -2066,7 +2066,7 @@ impl<'a, K, V: Default> Entry<'a, K, V> {
     /// ```
     /// #![feature(entry_or_default)]
     /// # fn main() {
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, Option<u32>> = HashMap::new();
     /// map.entry("poneyland").or_default();
@@ -2089,7 +2089,7 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2105,8 +2105,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2129,8 +2129,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2149,8 +2149,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2173,8 +2173,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2196,8 +2196,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2220,8 +2220,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -2250,8 +2250,8 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     ///
     /// ```
     /// #![feature(map_entry_replace)]
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     /// map.insert("poneyland".to_string(), 15);
@@ -2282,7 +2282,7 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use rayon_hash::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// assert_eq!(map.entry("poneyland").key(), &"poneyland");
@@ -2297,8 +2297,8 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -2317,8 +2317,8 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
-    /// use std::collections::hash_map::Entry;
+    /// use rayon_hash::HashMap;
+    /// use rayon_hash::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///

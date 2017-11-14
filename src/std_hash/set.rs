@@ -53,7 +53,7 @@ pub use self::par::*;
 /// # Examples
 ///
 /// ```
-/// use std::collections::HashSet;
+/// use rayon_hash::HashSet;
 /// // Type inference lets us omit an explicit type signature (which
 /// // would be `HashSet<&str>` in this example).
 /// let mut books = HashSet::new();
@@ -84,7 +84,7 @@ pub use self::par::*;
 /// future be implied by [`Eq`].
 ///
 /// ```
-/// use std::collections::HashSet;
+/// use rayon_hash::HashSet;
 /// #[derive(Hash, Eq, PartialEq, Debug)]
 /// struct Viking<'a> {
 ///     name: &'a str,
@@ -107,7 +107,7 @@ pub use self::par::*;
 /// A `HashSet` with fixed list of elements can be initialized from an array:
 ///
 /// ```
-/// use std::collections::HashSet;
+/// use rayon_hash::HashSet;
 ///
 /// fn main() {
 ///     let viking_names: HashSet<&str> =
@@ -137,7 +137,7 @@ impl<T: Hash + Eq> HashSet<T, RandomState> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let set: HashSet<i32> = HashSet::new();
     /// ```
     #[inline]
@@ -154,7 +154,7 @@ impl<T: Hash + Eq> HashSet<T, RandomState> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let set: HashSet<i32> = HashSet::with_capacity(10);
     /// assert!(set.capacity() >= 10);
     /// ```
@@ -182,8 +182,8 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
-    /// use std::collections::hash_map::RandomState;
+    /// use rayon_hash::HashSet;
+    /// use rayon_hash::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
     /// let mut set = HashSet::with_hasher(s);
@@ -209,8 +209,8 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
-    /// use std::collections::hash_map::RandomState;
+    /// use rayon_hash::HashSet;
+    /// use rayon_hash::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
     /// let mut set = HashSet::with_capacity_and_hasher(10, s);
@@ -229,8 +229,8 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
-    /// use std::collections::hash_map::RandomState;
+    /// use rayon_hash::HashSet;
+    /// use rayon_hash::hash_map::RandomState;
     ///
     /// let hasher = RandomState::new();
     /// let set: HashSet<i32> = HashSet::with_hasher(hasher);
@@ -246,7 +246,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let set: HashSet<i32> = HashSet::with_capacity(100);
     /// assert!(set.capacity() >= 100);
     /// ```
@@ -267,7 +267,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let mut set: HashSet<i32> = HashSet::new();
     /// set.reserve(10);
     /// assert!(set.capacity() >= 10);
@@ -284,7 +284,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut set = HashSet::with_capacity(100);
     /// set.insert(1);
@@ -304,7 +304,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let mut set = HashSet::new();
     /// set.insert("a");
     /// set.insert("b");
@@ -325,7 +325,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].iter().cloned().collect();
     ///
@@ -356,7 +356,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].iter().cloned().collect();
     ///
@@ -384,7 +384,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].iter().cloned().collect();
     ///
@@ -410,7 +410,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].iter().cloned().collect();
     ///
@@ -432,7 +432,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut v = HashSet::new();
     /// assert_eq!(v.len(), 0);
@@ -449,7 +449,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut v = HashSet::new();
     /// assert!(v.is_empty());
@@ -466,7 +466,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut set: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// assert!(!set.is_empty());
@@ -489,7 +489,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut v = HashSet::new();
     /// v.insert(1);
@@ -510,7 +510,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let set: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// assert_eq!(set.contains(&1), true);
@@ -549,7 +549,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let a: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// let mut b = HashSet::new();
@@ -571,7 +571,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let sup: HashSet<_> = [1, 2, 3].iter().cloned().collect();
     /// let mut set = HashSet::new();
@@ -593,7 +593,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let sub: HashSet<_> = [1, 2].iter().cloned().collect();
     /// let mut set = HashSet::new();
@@ -622,7 +622,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut set = HashSet::new();
     ///
@@ -652,7 +652,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let mut set = HashSet::new();
     ///
@@ -694,7 +694,7 @@ impl<T, S> HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let xs = [1,2,3,4,5,6];
     /// let mut set: HashSet<isize> = xs.iter().cloned().collect();
@@ -795,7 +795,7 @@ impl<'a, 'b, T, S> BitOr<&'b HashSet<T, S>> for &'a HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -827,7 +827,7 @@ impl<'a, 'b, T, S> BitAnd<&'b HashSet<T, S>> for &'a HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![2, 3, 4].into_iter().collect();
@@ -859,7 +859,7 @@ impl<'a, 'b, T, S> BitXor<&'b HashSet<T, S>> for &'a HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -891,7 +891,7 @@ impl<'a, 'b, T, S> Sub<&'b HashSet<T, S>> for &'a HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1029,7 +1029,7 @@ impl<T, S> IntoIterator for HashSet<T, S>
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashSet;
+    /// use rayon_hash::HashSet;
     /// let mut set = HashSet::new();
     /// set.insert("a".to_string());
     /// set.insert("b".to_string());
