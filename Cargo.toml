@@ -8,6 +8,7 @@ keywords = ["parallel", "iterator", "hash", "map", "set"]
 categories = ["concurrency", "data-structures"]
 description = "HashMap and HashSet with support for Rayon parallel iterators"
 license = "Apache-2.0/MIT"
+readme = "README.md"
 
 [dependencies]
 rayon = "0.9"
