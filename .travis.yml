@@ -1,0 +1,12 @@
+language: rust
+rust: nightly
+sudo: false
+
+matrix:
+  fast_finish: true
+
+branches:
+  only:
+    - master
+    - staging
+    - trying
