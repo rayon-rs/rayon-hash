@@ -7,3 +7,22 @@ Rayon does provide iterators for these standard types already, but since it
 can't access internal fields, it has to collect to an intermediate vector to be
 split into parallel jobs.  With the custom types in `rayon-hash`, we can
 instead read the raw hash table directly, for much better performance.
+
+## Unstable features
+
+Some of the features copied from `std` would be guarded with `#[unstable]`
+attributes, but this isn't available to general crates.  Instead, we guard
+these features with a config flag `rayon_hash_unstable`.  The easiest way to
+use this is to set the `RUSTFLAGS` environment variable:
+
+```
+RUSTFLAGS='--cfg rayon_hash_unstable' cargo build
+```
+
+Note that this must not only be done for your crate, but for any crate that
+depends on your crate.  This infectious nature is intentional, as it serves as
+a reminder that you are outside of the normal semver guarantees.  These
+features also require a nightly Rust compiler.
+
+When such features are stabilized in the standard library, we will remove the
+`rayon_hash_unstable` guard here too.
