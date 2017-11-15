@@ -15,7 +15,8 @@ use borrow::Borrow;
 use cmp::max;
 use fmt::{self, Debug};
 use hash::{Hash, BuildHasher};
-use iter::{FromIterator, FusedIterator};
+use iter::FromIterator;
+#[cfg(rayon_hash_unstable)] use iter::FusedIterator;
 use mem::{self, replace};
 use ops::{Deref, Index, InPlace, Place, Placer};
 use ptr;
@@ -1694,7 +1695,7 @@ impl<'a, K, V> ExactSizeIterator for Iter<'a, K, V> {
     }
 }
 
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Iter<'a, K, V> {}
 
 // #[stable(feature = "rust1", since = "1.0.0")]
@@ -1717,7 +1718,7 @@ impl<'a, K, V> ExactSizeIterator for IterMut<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for IterMut<'a, K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1752,7 +1753,7 @@ impl<K, V> ExactSizeIterator for IntoIter<K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<K, V> FusedIterator for IntoIter<K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1784,7 +1785,7 @@ impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Keys<'a, K, V> {}
 
 // #[stable(feature = "rust1", since = "1.0.0")]
@@ -1807,7 +1808,7 @@ impl<'a, K, V> ExactSizeIterator for Values<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Values<'a, K, V> {}
 
 // #[stable(feature = "map_values_mut", since = "1.10.0")]
@@ -1830,7 +1831,7 @@ impl<'a, K, V> ExactSizeIterator for ValuesMut<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for ValuesMut<'a, K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1865,7 +1866,7 @@ impl<'a, K, V> ExactSizeIterator for Drain<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Drain<'a, K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
