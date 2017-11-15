@@ -26,3 +26,10 @@ features also require a nightly Rust compiler.
 
 When such features are stabilized in the standard library, we will remove the
 `rayon_hash_unstable` guard here too.
+
+## License
+
+Rayon-hash is distributed under the terms of both the MIT license and the
+Apache License (Version 2.0). See [LICENSE-APACHE](LICENSE-APACHE) and
+[LICENSE-MIT](LICENSE-MIT) for details. Opening a pull requests is
+assumed to signal agreement with these licensing terms.
