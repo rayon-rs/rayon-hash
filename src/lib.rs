@@ -3,11 +3,11 @@
 #![feature(dropck_eyepatch)]
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![feature(generic_param_attrs)]
-#![feature(placement_new_protocol)]
+#![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
 #![feature(shared)]
 #![feature(unique)]
 
-#![cfg_attr(test, feature(placement_in_syntax))]
+#![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
 #![cfg_attr(test, feature(test))]
 
 extern crate alloc;
@@ -25,7 +25,7 @@ use std::mem;
 use std::ops;
 use std::ptr;
 
-#[cfg(test)] use std::panic;
+#[cfg(all(rayon_hash_unstable, test))] use std::panic;
 #[cfg(test)] use std::cell;
 
 // #[stable(feature = "rust1", since = "1.0.0")]

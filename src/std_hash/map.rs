@@ -18,8 +18,9 @@ use hash::{Hash, BuildHasher};
 use iter::FromIterator;
 #[cfg(rayon_hash_unstable)] use iter::FusedIterator;
 use mem::{self, replace};
-use ops::{Deref, Index, InPlace, Place, Placer};
-use ptr;
+use ops::{Deref, Index};
+#[cfg(rayon_hash_unstable)] use ops::{InPlace, Place, Placer};
+#[cfg(rayon_hash_unstable)] use ptr;
 
 pub use std::collections::hash_map::{DefaultHasher, RandomState};
 
@@ -1885,6 +1886,7 @@ impl<'a, K, V> fmt::Debug for Drain<'a, K, V>
 ///
 /// See [`HashMap::entry`](struct.HashMap.html#method.entry) for details.
 #[must_use = "places do nothing unless written to with `<-` syntax"]
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "struct name and placement protocol is subject to change",
 //            issue = "30172")]
@@ -1892,6 +1894,7 @@ pub struct EntryPlace<'a, K: 'a, V: 'a> {
     bucket: FullBucketMut<'a, K, V>,
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "struct name and placement protocol is subject to change",
 //            issue = "30172")]
@@ -1904,6 +1907,7 @@ impl<'a, K: 'a + Debug, V: 'a + Debug> Debug for EntryPlace<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "struct name and placement protocol is subject to change",
 //            issue = "30172")]
@@ -1915,6 +1919,7 @@ impl<'a, K, V> Drop for EntryPlace<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
@@ -1935,6 +1940,7 @@ impl<'a, K, V> Placer<V> for Entry<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
@@ -1944,6 +1950,7 @@ impl<'a, K, V> Place<V> for EntryPlace<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
@@ -2349,6 +2356,7 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V> {
 
     // Only used for InPlacement insert. Avoid unnecessary value copy.
     // The value remains uninitialized.
+    #[cfg(rayon_hash_unstable)]
     unsafe fn insert_key(self) -> FullBucketMut<'a, K, V> {
         match self.elem {
             NeqElem(mut bucket, disp) => {
@@ -2496,7 +2504,7 @@ mod test_map {
     use super::RandomState;
     use cell::RefCell;
     use rand::{thread_rng, Rng};
-    use panic;
+    #[cfg(rayon_hash_unstable)] use panic;
 
     #[test]
     fn test_zero_capacities() {
@@ -3371,6 +3379,7 @@ mod test_map {
     }
 
     #[test]
+    #[cfg(rayon_hash_unstable)]
     fn test_placement_in() {
         let mut map = HashMap::new();
         map.extend((0..10).map(|i| (i, i)));
@@ -3385,6 +3394,7 @@ mod test_map {
     }
 
     #[test]
+    #[cfg(rayon_hash_unstable)]
     fn test_placement_panic() {
         let mut map = HashMap::new();
         map.extend((0..10).map(|i| (i, i)));
@@ -3404,6 +3414,7 @@ mod test_map {
     }
 
     #[test]
+    #[cfg(rayon_hash_unstable)]
     fn test_placement_drop() {
         // correctly drop
         struct TestV<'a>(&'a mut bool);
