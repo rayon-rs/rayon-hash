@@ -2049,7 +2049,7 @@ impl<'a, K, V> Entry<'a, K, V> {
     ///    .or_insert(42);
     /// assert_eq!(map["poneyland"], 43);
     /// ```
-    // #[unstable(feature = "entry_and_modify", issue = "44733")]
+    #[cfg(rayon_hash_unstable)] // #[unstable(feature = "entry_and_modify", issue = "44733")]
     pub fn and_modify<F>(self, mut f: F) -> Self
         where F: FnMut(&mut V)
     {
@@ -2065,7 +2065,7 @@ impl<'a, K, V> Entry<'a, K, V> {
 }
 
 impl<'a, K, V: Default> Entry<'a, K, V> {
-    // #[unstable(feature = "entry_or_default", issue = "44324")]
+    #[cfg(rayon_hash_unstable)] // #[unstable(feature = "entry_or_default", issue = "44324")]
     /// Ensures a value is in the entry by inserting the default value if empty,
     /// and returns a mutable reference to the value in the entry.
     ///
@@ -2272,7 +2272,7 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map.get("poneyland"), Some(&16));
     /// ```
-    // #[unstable(feature = "map_entry_replace", issue = "44286")]
+    #[cfg(rayon_hash_unstable)] // #[unstable(feature = "map_entry_replace", issue = "44286")]
     pub fn replace(mut self, value: V) -> (K, V) {
         let (old_key, old_value) = self.elem.read_mut();
 
