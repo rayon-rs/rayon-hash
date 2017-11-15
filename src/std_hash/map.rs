@@ -15,10 +15,12 @@ use borrow::Borrow;
 use cmp::max;
 use fmt::{self, Debug};
 use hash::{Hash, BuildHasher};
-use iter::{FromIterator, FusedIterator};
+use iter::FromIterator;
+#[cfg(rayon_hash_unstable)] use iter::FusedIterator;
 use mem::{self, replace};
-use ops::{Deref, Index, InPlace, Place, Placer};
-use ptr;
+use ops::{Deref, Index};
+#[cfg(rayon_hash_unstable)] use ops::{InPlace, Place, Placer};
+#[cfg(rayon_hash_unstable)] use ptr;
 
 pub use std::collections::hash_map::{DefaultHasher, RandomState};
 
@@ -1694,7 +1696,7 @@ impl<'a, K, V> ExactSizeIterator for Iter<'a, K, V> {
     }
 }
 
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Iter<'a, K, V> {}
 
 // #[stable(feature = "rust1", since = "1.0.0")]
@@ -1717,7 +1719,7 @@ impl<'a, K, V> ExactSizeIterator for IterMut<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for IterMut<'a, K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1752,7 +1754,7 @@ impl<K, V> ExactSizeIterator for IntoIter<K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<K, V> FusedIterator for IntoIter<K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1784,7 +1786,7 @@ impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Keys<'a, K, V> {}
 
 // #[stable(feature = "rust1", since = "1.0.0")]
@@ -1807,7 +1809,7 @@ impl<'a, K, V> ExactSizeIterator for Values<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Values<'a, K, V> {}
 
 // #[stable(feature = "map_values_mut", since = "1.10.0")]
@@ -1830,7 +1832,7 @@ impl<'a, K, V> ExactSizeIterator for ValuesMut<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for ValuesMut<'a, K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1865,7 +1867,7 @@ impl<'a, K, V> ExactSizeIterator for Drain<'a, K, V> {
         self.inner.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K, V> FusedIterator for Drain<'a, K, V> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1884,6 +1886,7 @@ impl<'a, K, V> fmt::Debug for Drain<'a, K, V>
 ///
 /// See [`HashMap::entry`](struct.HashMap.html#method.entry) for details.
 #[must_use = "places do nothing unless written to with `<-` syntax"]
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "struct name and placement protocol is subject to change",
 //            issue = "30172")]
@@ -1891,6 +1894,7 @@ pub struct EntryPlace<'a, K: 'a, V: 'a> {
     bucket: FullBucketMut<'a, K, V>,
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "struct name and placement protocol is subject to change",
 //            issue = "30172")]
@@ -1903,6 +1907,7 @@ impl<'a, K: 'a + Debug, V: 'a + Debug> Debug for EntryPlace<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "struct name and placement protocol is subject to change",
 //            issue = "30172")]
@@ -1914,6 +1919,7 @@ impl<'a, K, V> Drop for EntryPlace<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
@@ -1934,6 +1940,7 @@ impl<'a, K, V> Placer<V> for Entry<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
@@ -1943,6 +1950,7 @@ impl<'a, K, V> Place<V> for EntryPlace<'a, K, V> {
     }
 }
 
+#[cfg(rayon_hash_unstable)]
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
@@ -2041,7 +2049,7 @@ impl<'a, K, V> Entry<'a, K, V> {
     ///    .or_insert(42);
     /// assert_eq!(map["poneyland"], 43);
     /// ```
-    // #[unstable(feature = "entry_and_modify", issue = "44733")]
+    #[cfg(rayon_hash_unstable)] // #[unstable(feature = "entry_and_modify", issue = "44733")]
     pub fn and_modify<F>(self, mut f: F) -> Self
         where F: FnMut(&mut V)
     {
@@ -2057,7 +2065,7 @@ impl<'a, K, V> Entry<'a, K, V> {
 }
 
 impl<'a, K, V: Default> Entry<'a, K, V> {
-    // #[unstable(feature = "entry_or_default", issue = "44324")]
+    #[cfg(rayon_hash_unstable)] // #[unstable(feature = "entry_or_default", issue = "44324")]
     /// Ensures a value is in the entry by inserting the default value if empty,
     /// and returns a mutable reference to the value in the entry.
     ///
@@ -2264,7 +2272,7 @@ impl<'a, K, V> OccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map.get("poneyland"), Some(&16));
     /// ```
-    // #[unstable(feature = "map_entry_replace", issue = "44286")]
+    #[cfg(rayon_hash_unstable)] // #[unstable(feature = "map_entry_replace", issue = "44286")]
     pub fn replace(mut self, value: V) -> (K, V) {
         let (old_key, old_value) = self.elem.read_mut();
 
@@ -2348,6 +2356,7 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V> {
 
     // Only used for InPlacement insert. Avoid unnecessary value copy.
     // The value remains uninitialized.
+    #[cfg(rayon_hash_unstable)]
     unsafe fn insert_key(self) -> FullBucketMut<'a, K, V> {
         match self.elem {
             NeqElem(mut bucket, disp) => {
@@ -2495,7 +2504,7 @@ mod test_map {
     use super::RandomState;
     use cell::RefCell;
     use rand::{thread_rng, Rng};
-    use panic;
+    #[cfg(rayon_hash_unstable)] use panic;
 
     #[test]
     fn test_zero_capacities() {
@@ -3370,6 +3379,7 @@ mod test_map {
     }
 
     #[test]
+    #[cfg(rayon_hash_unstable)]
     fn test_placement_in() {
         let mut map = HashMap::new();
         map.extend((0..10).map(|i| (i, i)));
@@ -3384,6 +3394,7 @@ mod test_map {
     }
 
     #[test]
+    #[cfg(rayon_hash_unstable)]
     fn test_placement_panic() {
         let mut map = HashMap::new();
         map.extend((0..10).map(|i| (i, i)));
@@ -3403,6 +3414,7 @@ mod test_map {
     }
 
     #[test]
+    #[cfg(rayon_hash_unstable)]
     fn test_placement_drop() {
         // correctly drop
         struct TestV<'a>(&'a mut bool);

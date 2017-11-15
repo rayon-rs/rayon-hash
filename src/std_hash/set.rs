@@ -11,7 +11,9 @@
 use borrow::Borrow;
 use fmt;
 use hash::{Hash, BuildHasher};
-use iter::{Chain, FromIterator, FusedIterator};
+use iter::{Chain, FromIterator};
+#[cfg(rayon_hash_unstable)]
+use iter::FusedIterator;
 use ops::{BitOr, BitAnd, BitXor, Sub};
 
 use super::Recover;
@@ -1070,7 +1072,7 @@ impl<'a, K> ExactSizeIterator for Iter<'a, K> {
         self.iter.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K> FusedIterator for Iter<'a, K> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1097,7 +1099,7 @@ impl<K> ExactSizeIterator for IntoIter<K> {
         self.iter.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<K> FusedIterator for IntoIter<K> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1128,7 +1130,7 @@ impl<'a, K> ExactSizeIterator for Drain<'a, K> {
         self.iter.len()
     }
 }
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, K> FusedIterator for Drain<'a, K> {}
 
 // #[stable(feature = "std_debug", since = "1.16.0")]
@@ -1185,7 +1187,7 @@ impl<'a, T, S> fmt::Debug for Intersection<'a, T, S>
     }
 }
 
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, T, S> FusedIterator for Intersection<'a, T, S>
     where T: Eq + Hash,
           S: BuildHasher
@@ -1225,7 +1227,7 @@ impl<'a, T, S> Iterator for Difference<'a, T, S>
     }
 }
 
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, T, S> FusedIterator for Difference<'a, T, S>
     where T: Eq + Hash,
           S: BuildHasher
@@ -1264,7 +1266,7 @@ impl<'a, T, S> Iterator for SymmetricDifference<'a, T, S>
     }
 }
 
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, T, S> FusedIterator for SymmetricDifference<'a, T, S>
     where T: Eq + Hash,
           S: BuildHasher
@@ -1288,7 +1290,7 @@ impl<'a, T, S> Clone for Union<'a, T, S> {
     }
 }
 
-// #[unstable(feature = "fused", issue = "35602")]
+#[cfg(rayon_hash_unstable)] // #[unstable(feature = "fused", issue = "35602")]
 impl<'a, T, S> FusedIterator for Union<'a, T, S>
     where T: Eq + Hash,
           S: BuildHasher

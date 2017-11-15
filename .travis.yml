@@ -1,9 +1,13 @@
 language: rust
-rust: nightly
 sudo: false
 
 matrix:
   fast_finish: true
+  include:
+    - rust: nightly
+
+    - rust: nightly
+      env: RUSTFLAGS='--cfg rayon_hash_unstable'
 
 branches:
   only:

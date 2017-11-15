@@ -496,6 +496,7 @@ impl<K, V, M> EmptyBucket<K, V, M>
 
     /// Puts given key, remain value uninitialized.
     /// It is only used for inplacement insertion.
+    #[cfg(rayon_hash_unstable)]
     pub unsafe fn put_key(mut self, hash: SafeHash, key: K) -> FullBucket<K, V, M> {
         *self.raw.hash() = hash.inspect();
         let pair_ptr = self.raw.pair();
@@ -587,6 +588,7 @@ impl<'t, K, V> FullBucket<K, V, &'t mut RawTable<K, V>> {
     /// Remove this bucket's `key` from the hashtable.
     /// Only used for inplacement insertion.
     /// NOTE: `Value` is uninitialized when this function is called, don't try to drop the `Value`.
+    #[cfg(rayon_hash_unstable)]
     pub unsafe fn remove_key(&mut self) {
         self.table.size -= 1;
 
