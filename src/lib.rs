@@ -1,8 +1,6 @@
 #![feature(alloc)]
 #![feature(allocator_api)]
-#![feature(dropck_eyepatch)]
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
-#![feature(generic_param_attrs)]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
 #![feature(shared)]
 #![feature(unique)]
