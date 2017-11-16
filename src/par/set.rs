@@ -1,6 +1,6 @@
 /// Rayon extensions for `HashSet`
 
-use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator};
+use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
 use rayon::iter::plumbing::UnindexedConsumer;
 
 use super::{Hash, HashSet, BuildHasher, map};
@@ -106,7 +106,7 @@ impl<'a, T: Sync, S> IntoParallelIterator for &'a HashSet<T, S> {
 }
 
 
-// This is equal to the normal `HashSet` -- no custom advantage.
+/// Collect values from a parallel iterator into a hashset.
 impl<T, S> FromParallelIterator<T> for HashSet<T, S>
     where T: Eq + Hash + Send,
           S: BuildHasher + Default + Send
@@ -114,21 +114,56 @@ impl<T, S> FromParallelIterator<T> for HashSet<T, S>
     fn from_par_iter<P>(par_iter: P) -> Self
         where P: IntoParallelIterator<Item = T>
     {
-        use std::collections::LinkedList;
+        let mut set = HashSet::default();
+        set.par_extend(par_iter);
+        set
+    }
+}
 
-        let list: LinkedList<_> = par_iter.into_par_iter()
-            .fold(Vec::new, |mut vec, elem| {
-                vec.push(elem);
-                vec
-            })
-            .collect();
 
-        let len = list.iter().map(Vec::len).sum();
-        let start = HashSet::with_capacity_and_hasher(len, Default::default());
-        list.into_iter().fold(start, |mut coll, vec| {
-            coll.extend(vec);
-            coll
+/// Extend a hash set with items from a parallel iterator.
+impl<T, S> ParallelExtend<T> for HashSet<T, S>
+    where T: Eq + Hash + Send,
+          S: BuildHasher + Send
+{
+    fn par_extend<I>(&mut self, par_iter: I)
+        where I: IntoParallelIterator<Item = T>
+    {
+        extend(self, par_iter);
+    }
+}
+
+/// Extend a hash set with copied items from a parallel iterator.
+impl<'a, T, S> ParallelExtend<&'a T> for HashSet<T, S>
+    where T: 'a + Copy + Eq + Hash + Send + Sync,
+          S: BuildHasher + Send
+{
+    fn par_extend<I>(&mut self, par_iter: I)
+        where I: IntoParallelIterator<Item = &'a T>
+    {
+        extend(self, par_iter);
+    }
+}
+
+// This is equal to the normal `HashSet` -- no custom advantage.
+fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
+    where T: Eq + Hash,
+          S: BuildHasher,
+          I: IntoParallelIterator,
+          HashSet<T, S>: Extend<I::Item>
+{
+    use std::collections::LinkedList;
+
+    let list: LinkedList<_> = par_iter.into_par_iter()
+        .fold(Vec::new, |mut vec, elem| {
+            vec.push(elem);
+            vec
         })
+        .collect();
+
+    set.reserve(list.iter().map(Vec::len).sum());
+    for vec in list {
+        set.extend(vec);
     }
 }
 
@@ -402,7 +437,7 @@ mod test_par_set {
     fn test_from_iter() {
         let xs = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-        let set: HashSet<_> = xs.iter().cloned().collect();
+        let set: HashSet<_> = xs.par_iter().cloned().collect();
 
         for x in &xs {
             assert!(set.contains(x));
@@ -444,5 +479,33 @@ mod test_par_set {
         s2.insert(3);
 
         assert!(s1.par_eq(&s2));
+    }
+
+    #[test]
+    fn test_extend_ref() {
+        let mut a = HashSet::new();
+        a.insert(1);
+
+        a.par_extend(&[2, 3, 4][..]);
+
+        assert_eq!(a.len(), 4);
+        assert!(a.contains(&1));
+        assert!(a.contains(&2));
+        assert!(a.contains(&3));
+        assert!(a.contains(&4));
+
+        let mut b = HashSet::new();
+        b.insert(5);
+        b.insert(6);
+
+        a.par_extend(&b);
+
+        assert_eq!(a.len(), 6);
+        assert!(a.contains(&1));
+        assert!(a.contains(&2));
+        assert!(a.contains(&3));
+        assert!(a.contains(&4));
+        assert!(a.contains(&5));
+        assert!(a.contains(&6));
     }
 }
