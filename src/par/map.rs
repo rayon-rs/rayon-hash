@@ -1,6 +1,6 @@
 /// Rayon extensions to `HashMap`
 
-use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator};
+use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
 use rayon::iter::plumbing::UnindexedConsumer;
 
 use super::{Hash, HashMap, BuildHasher};
@@ -88,7 +88,10 @@ impl<'a, K: Sync, V: Send, S> IntoParallelIterator for &'a mut HashMap<K, V, S> 
 }
 
 
-// This is equal to the normal `HashMap` -- no custom advantage.
+/// Collect (key, value) pairs from a parallel iterator into a
+/// hashmap. If multiple pairs correspond to the same key, then the
+/// ones produced earlier in the parallel iterator will be
+/// overwritten, just as with a sequential iterator.
 impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
     where K: Eq + Hash + Send,
           V: Send,
@@ -97,21 +100,58 @@ impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
     fn from_par_iter<P>(par_iter: P) -> Self
         where P: IntoParallelIterator<Item = (K, V)>
     {
-        use std::collections::LinkedList;
+        let mut map = HashMap::default();
+        map.par_extend(par_iter);
+        map
+    }
+}
 
-        let list: LinkedList<_> = par_iter.into_par_iter()
-            .fold(Vec::new, |mut vec, elem| {
-                vec.push(elem);
-                vec
-            })
-            .collect();
 
-        let len = list.iter().map(Vec::len).sum();
-        let start = HashMap::with_capacity_and_hasher(len, Default::default());
-        list.into_iter().fold(start, |mut coll, vec| {
-            coll.extend(vec);
-            coll
+/// Extend a hash map with items from a parallel iterator.
+impl<K, V, S> ParallelExtend<(K, V)> for HashMap<K, V, S>
+    where K: Eq + Hash + Send,
+          V: Send,
+          S: BuildHasher + Send
+{
+    fn par_extend<I>(&mut self, par_iter: I)
+        where I: IntoParallelIterator<Item = (K, V)>
+    {
+        extend(self, par_iter);
+    }
+}
+
+/// Extend a hash map with copied items from a parallel iterator.
+impl<'a, K, V, S> ParallelExtend<(&'a K, &'a V)> for HashMap<K, V, S>
+    where K: Copy + Eq + Hash + Send + Sync,
+          V: Copy + Send + Sync,
+          S: BuildHasher + Send
+{
+    fn par_extend<I>(&mut self, par_iter: I)
+        where I: IntoParallelIterator<Item = (&'a K, &'a V)>
+    {
+        extend(self, par_iter);
+    }
+}
+
+// This is equal to the normal `HashMap` -- no custom advantage.
+fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
+    where K: Eq + Hash,
+          S: BuildHasher,
+          I: IntoParallelIterator,
+          HashMap<K, V, S>: Extend<I::Item>
+{
+    use std::collections::LinkedList;
+
+    let list: LinkedList<_> = par_iter.into_par_iter()
+        .fold(Vec::new, |mut vec, elem| {
+            vec.push(elem);
+            vec
         })
+        .collect();
+
+    map.reserve(list.iter().map(Vec::len).sum());
+    for vec in list {
+        map.extend(vec);
     }
 }
 
@@ -367,5 +407,21 @@ mod test_par_map {
         for &(k, v) in &xs {
             assert_eq!(map.get(&k), Some(&v));
         }
+    }
+
+    #[test]
+    fn test_extend_ref() {
+        let mut a = HashMap::new();
+        a.insert(1, "one");
+        let mut b = HashMap::new();
+        b.insert(2, "two");
+        b.insert(3, "three");
+
+        a.par_extend(&b);
+
+        assert_eq!(a.len(), 3);
+        assert_eq!(a[&1], "one");
+        assert_eq!(a[&2], "two");
+        assert_eq!(a[&3], "three");
     }
 }
