@@ -57,7 +57,7 @@ impl<'a, K, V> Iterator for SplitBuckets<'a, K, V> {
 }
 
 
-/// Parallel iterator over shared references to entries in a table.
+/// Parallel iterator over shared references to entries in a map.
 pub struct ParIter<'a, K: 'a, V: 'a> {
     table: &'a RawTable<K, V>,
 }
@@ -111,7 +111,113 @@ impl<'a, K: Sync, V: Sync> UnindexedProducer for ParIterProducer<'a, K, V> {
 }
 
 
-/// Parallel iterator over mutable references to entries in a table.
+/// Parallel iterator over shared references to keys in a map.
+pub struct ParKeys<'a, K: 'a, V: 'a> {
+    table: &'a RawTable<K, V>,
+}
+
+unsafe impl<'a, K: Sync, V> Send for ParKeys<'a, K, V> {}
+
+impl<K: Sync, V> RawTable<K, V> {
+    pub fn par_keys(&self) -> ParKeys<K, V> {
+        ParKeys { table: self }
+    }
+}
+
+impl<'a, K: Sync, V> ParallelIterator for ParKeys<'a, K, V> {
+    type Item = &'a K;
+
+    fn drive_unindexed<C>(self, consumer: C) -> C::Result
+        where C: UnindexedConsumer<Self::Item>
+    {
+        let producer = ParKeysProducer { iter: SplitBuckets::new(self.table) };
+        bridge_unindexed(producer, consumer)
+    }
+}
+
+struct ParKeysProducer<'a, K: 'a, V: 'a> {
+    iter: SplitBuckets<'a, K, V>,
+}
+
+unsafe impl<'a, K: Sync, V> Send for ParKeysProducer<'a, K, V> {}
+
+impl<'a, K: Sync, V> UnindexedProducer for ParKeysProducer<'a, K, V> {
+    type Item = &'a K;
+
+    fn split(mut self) -> (Self, Option<Self>) {
+        let (left, right) = self.iter.split();
+        self.iter = left;
+        let right = right.map(|iter| ParKeysProducer { iter: iter });
+        (self, right)
+    }
+
+    fn fold_with<F>(self, folder: F) -> F
+        where F: Folder<Self::Item>
+    {
+        let iter = self.iter
+            .map(|bucket| unsafe {
+                     let pair_ptr = bucket.pair();
+                     &(*pair_ptr).0
+                 });
+        folder.consume_iter(iter)
+    }
+}
+
+
+/// Parallel iterator over shared references to values in a map.
+pub struct ParValues<'a, K: 'a, V: 'a> {
+    table: &'a RawTable<K, V>,
+}
+
+unsafe impl<'a, K, V: Sync> Send for ParValues<'a, K, V> {}
+
+impl<K, V: Sync> RawTable<K, V> {
+    pub fn par_values(&self) -> ParValues<K, V> {
+        ParValues { table: self }
+    }
+}
+
+impl<'a, K, V: Sync> ParallelIterator for ParValues<'a, K, V> {
+    type Item = &'a V;
+
+    fn drive_unindexed<C>(self, consumer: C) -> C::Result
+        where C: UnindexedConsumer<Self::Item>
+    {
+        let producer = ParValuesProducer { iter: SplitBuckets::new(self.table) };
+        bridge_unindexed(producer, consumer)
+    }
+}
+
+struct ParValuesProducer<'a, K: 'a, V: 'a> {
+    iter: SplitBuckets<'a, K, V>,
+}
+
+unsafe impl<'a, K, V: Sync> Send for ParValuesProducer<'a, K, V> {}
+
+impl<'a, K, V: Sync> UnindexedProducer for ParValuesProducer<'a, K, V> {
+    type Item = &'a V;
+
+    fn split(mut self) -> (Self, Option<Self>) {
+        let (left, right) = self.iter.split();
+        self.iter = left;
+        let right = right.map(|iter| ParValuesProducer { iter: iter });
+        (self, right)
+    }
+
+    fn fold_with<F>(self, folder: F) -> F
+        where F: Folder<Self::Item>
+    {
+        let iter = self.iter
+            .map(|bucket| unsafe {
+                     let pair_ptr = bucket.pair();
+                     &(*pair_ptr).1
+                 });
+        folder.consume_iter(iter)
+    }
+}
+
+
+/// Parallel iterator over mutable references to entries in a map.
 pub struct ParIterMut<'a, K: 'a, V: 'a> {
     table: &'a mut RawTable<K, V>,
 }
@@ -171,7 +277,66 @@ impl<'a, K: Sync, V: Send> UnindexedProducer for ParIterMutProducer<'a, K, V> {
     }
 }
 
-/// Parallel iterator over the entries in a table, consuming it.
+
+/// Parallel iterator over mutable references to values in a map.
+pub struct ParValuesMut<'a, K: 'a, V: 'a> {
+    table: &'a mut RawTable<K, V>,
+}
+
+unsafe impl<'a, K, V: Send> Send for ParValuesMut<'a, K, V> {}
+
+impl<K, V: Send> RawTable<K, V> {
+    pub fn par_values_mut(&mut self) -> ParValuesMut<K, V> {
+        ParValuesMut { table: self }
+    }
+}
+
+impl<'a, K, V: Send> ParallelIterator for ParValuesMut<'a, K, V> {
+    type Item = &'a mut V;
+
+    fn drive_unindexed<C>(self, consumer: C) -> C::Result
+        where C: UnindexedConsumer<Self::Item>
+    {
+        let producer = ParValuesMutProducer {
+            iter: SplitBuckets::new(self.table),
+            marker: marker::PhantomData,
+        };
+        bridge_unindexed(producer, consumer)
+    }
+}
+
+struct ParValuesMutProducer<'a, K: 'a, V: 'a> {
+    iter: SplitBuckets<'a, K, V>,
+    // To ensure invariance with respect to V
+    marker: marker::PhantomData<&'a mut V>,
+}
+
+unsafe impl<'a, K, V: Send> Send for ParValuesMutProducer<'a, K, V> {}
+
+impl<'a, K, V: Send> UnindexedProducer for ParValuesMutProducer<'a, K, V> {
+    type Item = &'a mut V;
+
+    fn split(mut self) -> (Self, Option<Self>) {
+        let (left, right) = self.iter.split();
+        self.iter = left;
+        let right = right.map(|iter| ParValuesMutProducer { iter: iter, ..self });
+        (self, right)
+    }
+
+    fn fold_with<F>(self, folder: F) -> F
+        where F: Folder<Self::Item>
+    {
+        let iter = self.iter
+            .map(|bucket| unsafe {
+                     let pair_ptr = bucket.pair();
+                     &mut (*pair_ptr).1
+                 });
+        folder.consume_iter(iter)
+    }
+}
+
+
+/// Parallel iterator over the entries in a map, consuming it.
 pub struct ParIntoIter<K, V> {
     table: RawTable<K, V>,
 }
