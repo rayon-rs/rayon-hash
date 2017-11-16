@@ -1171,7 +1171,8 @@ impl<K: Clone, V: Clone> Clone for RawTable<K, V> {
     }
 }
 
-unsafe impl<#[may_dangle] K, #[may_dangle] V> Drop for RawTable<K, V> {
+// unsafe impl<#[may_dangle] K, #[may_dangle] V> Drop for RawTable<K, V> {
+impl<K, V> Drop for RawTable<K, V> {
     fn drop(&mut self) {
         if self.capacity() == 0 {
             return;
