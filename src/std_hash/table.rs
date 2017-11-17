@@ -8,7 +8,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use alloc::heap::{Heap, Alloc, Layout};
+// use alloc::heap::{Heap, Alloc, Layout};
+use heap;
 
 use cmp;
 use hash::{BuildHasher, Hash, Hasher};
@@ -788,8 +789,9 @@ impl<K, V> RawTable<K, V> {
                     .expect("capacity overflow"),
                 "capacity overflow");
 
-        let buffer = Heap.alloc(Layout::from_size_align(size, alignment).unwrap())
-            .unwrap_or_else(|e| Heap.oom(e));
+        // let buffer = Heap.alloc(Layout::from_size_align(size, alignment).unwrap())
+        //     .unwrap_or_else(|e| Heap.oom(e));
+        let buffer = heap::alloc::<HashUint, (K, V)>(size, alignment);
 
         let hashes = buffer as *mut HashUint;
 
@@ -1200,8 +1202,9 @@ impl<K, V> Drop for RawTable<K, V> {
         debug_assert!(!oflo, "should be impossible");
 
         unsafe {
-            Heap.dealloc(self.hashes.ptr() as *mut u8,
-                         Layout::from_size_align(size, align).unwrap());
+            // Heap.dealloc(self.hashes.ptr() as *mut u8,
+            //              Layout::from_size_align(size, align).unwrap());
+            heap::dealloc::<HashUint, (K, V)>(self.hashes.ptr() as *mut u8, size, align);
             // Remember how everything was allocated out of one buffer
             // during initialization? We only need one call to free here.
         }

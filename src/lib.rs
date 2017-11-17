@@ -1,5 +1,3 @@
-#![feature(alloc)]
-#![feature(allocator_api)]
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
 #![feature(shared)]
@@ -8,7 +6,6 @@
 #![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
 #![cfg_attr(test, feature(test))]
 
-extern crate alloc;
 extern crate rayon;
 
 #[cfg(test)] extern crate rand;
@@ -22,6 +19,8 @@ use std::marker;
 use std::mem;
 use std::ops;
 use std::ptr;
+
+mod heap;
 
 #[cfg(all(rayon_hash_unstable, test))] use std::panic;
 #[cfg(test)] use std::cell;
