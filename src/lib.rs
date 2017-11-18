@@ -10,16 +10,6 @@ extern crate rayon;
 
 #[cfg(test)] extern crate rand;
 
-use std::borrow;
-use std::cmp;
-use std::fmt;
-use std::hash;
-use std::iter;
-use std::marker;
-use std::mem;
-use std::ops;
-use std::ptr;
-
 mod heap;
 
 #[cfg(all(rayon_hash_unstable, test))] use std::panic;

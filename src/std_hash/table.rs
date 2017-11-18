@@ -11,13 +11,13 @@
 // use alloc::heap::{Heap, Alloc, Layout};
 use heap;
 
-use cmp;
-use hash::{BuildHasher, Hash, Hasher};
-use marker;
-use mem::{align_of, size_of, needs_drop};
-use mem;
-use ops::{Deref, DerefMut};
-use ptr::{self, Unique, Shared};
+use std::cmp;
+use std::hash::{BuildHasher, Hash, Hasher};
+use std::marker;
+use std::mem::{align_of, size_of, needs_drop};
+use std::mem;
+use std::ops::{Deref, DerefMut};
+use std::ptr::{self, Unique, Shared};
 
 use self::BucketState::*;
 

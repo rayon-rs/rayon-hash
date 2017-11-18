@@ -11,16 +11,16 @@
 use self::Entry::*;
 use self::VacantEntryState::*;
 
-use borrow::Borrow;
-use cmp::max;
-use fmt::{self, Debug};
-use hash::{Hash, BuildHasher};
-use iter::FromIterator;
-#[cfg(rayon_hash_unstable)] use iter::FusedIterator;
-use mem::{self, replace};
-use ops::{Deref, Index};
-#[cfg(rayon_hash_unstable)] use ops::{InPlace, Place, Placer};
-#[cfg(rayon_hash_unstable)] use ptr;
+use std::borrow::Borrow;
+use std::cmp::max;
+use std::fmt::{self, Debug};
+use std::hash::{Hash, BuildHasher};
+use std::iter::FromIterator;
+#[cfg(rayon_hash_unstable)] use std::iter::FusedIterator;
+use std::mem::{self, replace};
+use std::ops::{Deref, Index};
+#[cfg(rayon_hash_unstable)] use std::ops::{InPlace, Place, Placer};
+#[cfg(rayon_hash_unstable)] use std::ptr;
 
 pub use std::collections::hash_map::{DefaultHasher, RandomState};
 
