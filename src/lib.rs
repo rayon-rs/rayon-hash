@@ -1,7 +1,10 @@
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
-#![feature(shared)]
-#![feature(unique)]
+#![feature(coerce_unsized)]
+#![feature(const_fn)]
+#![feature(i128_type)]
+#![feature(optin_builtin_traits)]
+#![feature(unsize)]
 
 #![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
 #![cfg_attr(test, feature(test))]
@@ -11,6 +14,8 @@ extern crate rayon;
 #[cfg(test)] extern crate rand;
 
 mod heap;
+mod nonzero;
+mod ptr;
 
 #[cfg(all(rayon_hash_unstable, test))] use std::panic;
 #[cfg(test)] use std::cell;

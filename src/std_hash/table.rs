@@ -17,7 +17,8 @@ use std::marker;
 use std::mem::{align_of, size_of, needs_drop};
 use std::mem;
 use std::ops::{Deref, DerefMut};
-use std::ptr::{self, Unique, Shared};
+use std::ptr;
+use ptr::{Unique, Shared};
 
 use self::BucketState::*;
 
