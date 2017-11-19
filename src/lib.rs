@@ -1,3 +1,5 @@
+#![doc(html_root_url = "https://docs.rs/rayon-hash/0.2")]
+
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
 
