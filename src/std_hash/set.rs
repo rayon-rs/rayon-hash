@@ -8,13 +8,13 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use borrow::Borrow;
-use fmt;
-use hash::{Hash, BuildHasher};
-use iter::{Chain, FromIterator};
+use std::borrow::Borrow;
+use std::fmt;
+use std::hash::{Hash, BuildHasher};
+use std::iter::{Chain, FromIterator};
 #[cfg(rayon_hash_unstable)]
-use iter::FusedIterator;
-use ops::{BitOr, BitAnd, BitXor, Sub};
+use std::iter::FusedIterator;
+use std::ops::{BitOr, BitAnd, BitXor, Sub};
 
 use super::Recover;
 use super::map::{self, HashMap, Keys, RandomState};
@@ -1667,7 +1667,7 @@ mod test_set {
 
     #[test]
     fn test_replace() {
-        use hash;
+        use std::hash;
 
         #[derive(Debug)]
         struct Foo(&'static str, i32);

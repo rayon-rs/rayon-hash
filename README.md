@@ -8,6 +8,24 @@ can't access internal fields, it has to collect to an intermediate vector to be
 split into parallel jobs.  With the custom types in `rayon-hash`, we can
 instead read the raw hash table directly, for much better performance.
 
+This crate currently requires `rustc 1.21.0` or greater.
+
+## Known limitations
+
+Some compromises have been made to let this work on stable Rust, compared to
+the standard types that may use unstable features.  There are examples included
+which demonstrate the differences.
+
+- [`examples/may_dangle.rs`](examples/may_dangle.rs): Since we don't use the
+  unstable `#[may_dangle]` attributes, the type parameters of `HashMap<K, V>`
+  and `HashSet<T>` must strictly outlive the container itself.
+
+- [`examples/nonzero.rs`](examples/nonzero.rs): We use duplicated `Unique` and
+  `Shared` pointer types, containing a duplicate `NonZero` that's not marked
+  `#[lang = "non_zero"]`.  This means the compiler won't apply the intended
+  enum optimizations, so wrappers like `Option<HashMap<_,_>>` end up larger to
+  store the enum discriminant separately.
+
 ## Unstable features
 
 Some of the features copied from `std` would be guarded with `#[unstable]`

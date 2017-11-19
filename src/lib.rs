@@ -1,26 +1,15 @@
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
-#![feature(shared)]
-#![feature(unique)]
 
 #![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
-#![cfg_attr(test, feature(test))]
 
 extern crate rayon;
 
 #[cfg(test)] extern crate rand;
 
-use std::borrow;
-use std::cmp;
-use std::fmt;
-use std::hash;
-use std::iter;
-use std::marker;
-use std::mem;
-use std::ops;
-use std::ptr;
-
 mod heap;
+mod nonzero;
+mod ptr;
 
 #[cfg(all(rayon_hash_unstable, test))] use std::panic;
 #[cfg(test)] use std::cell;
