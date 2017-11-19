@@ -8,6 +8,8 @@ can't access internal fields, it has to collect to an intermediate vector to be
 split into parallel jobs.  With the custom types in `rayon-hash`, we can
 instead read the raw hash table directly, for much better performance.
 
+This crate currently requires `rustc 1.21.0` or greater.
+
 ## Known limitations
 
 Some compromises have been made to let this work on stable Rust, compared to
