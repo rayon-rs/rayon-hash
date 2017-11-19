@@ -2,7 +2,6 @@
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
 
 #![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
-#![cfg_attr(test, feature(test))]
 
 extern crate rayon;
 

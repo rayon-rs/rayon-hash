@@ -8,16 +8,16 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![cfg(test)]
+#![feature(test)]
 
+extern crate rayon_hash;
 extern crate test;
 
-use self::test::Bencher;
+use rayon_hash::HashMap;
+use test::Bencher;
 
 #[bench]
 fn new_drop(b: &mut Bencher) {
-    use super::map::HashMap;
-
     b.iter(|| {
         let m: HashMap<i32, i32> = HashMap::new();
         assert_eq!(m.len(), 0);
@@ -26,8 +26,6 @@ fn new_drop(b: &mut Bencher) {
 
 #[bench]
 fn new_insert_drop(b: &mut Bencher) {
-    use super::map::HashMap;
-
     b.iter(|| {
         let mut m = HashMap::new();
         m.insert(0, 0);
@@ -37,8 +35,6 @@ fn new_insert_drop(b: &mut Bencher) {
 
 #[bench]
 fn grow_by_insertion(b: &mut Bencher) {
-    use super::map::HashMap;
-
     let mut m = HashMap::new();
 
     for i in 1..1001 {
@@ -55,8 +51,6 @@ fn grow_by_insertion(b: &mut Bencher) {
 
 #[bench]
 fn find_existing(b: &mut Bencher) {
-    use super::map::HashMap;
-
     let mut m = HashMap::new();
 
     for i in 1..1001 {
@@ -72,8 +66,6 @@ fn find_existing(b: &mut Bencher) {
 
 #[bench]
 fn find_nonexisting(b: &mut Bencher) {
-    use super::map::HashMap;
-
     let mut m = HashMap::new();
 
     for i in 1..1001 {
@@ -89,8 +81,6 @@ fn find_nonexisting(b: &mut Bencher) {
 
 #[bench]
 fn hashmap_as_queue(b: &mut Bencher) {
-    use super::map::HashMap;
-
     let mut m = HashMap::new();
 
     for i in 1..1001 {
@@ -108,8 +98,6 @@ fn hashmap_as_queue(b: &mut Bencher) {
 
 #[bench]
 fn get_remove_insert(b: &mut Bencher) {
-    use super::map::HashMap;
-
     let mut m = HashMap::new();
 
     for i in 1..1001 {
