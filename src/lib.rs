@@ -1,10 +1,5 @@
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
-#![feature(coerce_unsized)]
-#![feature(const_fn)]
-#![feature(i128_type)]
-#![feature(optin_builtin_traits)]
-#![feature(unsize)]
 
 #![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
 #![cfg_attr(test, feature(test))]
