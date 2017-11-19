@@ -1,5 +1,9 @@
 # Rayon Hash
 
+[![rayon-hash crate](https://img.shields.io/crates/v/rayon-hash.svg)](https://crates.io/crates/rayon-hash)
+[![rayon-hash documentation](https://docs.rs/rayon-hash/badge.svg)](https://docs.rs/rayon-hash)
+[![Travis Status](https://travis-ci.org/rayon-rs/rayon-hash.svg?branch=master)](https://travis-ci.org/rayon-rs/rayon-hash)
+
 The `rayon-hash` crate duplicates the standard `HashMap` and `HashSet`, adding
 native support for Rayon parallel iterators.
 
@@ -7,6 +11,13 @@ Rayon does provide iterators for these standard types already, but since it
 can't access internal fields, it has to collect to an intermediate vector to be
 split into parallel jobs.  With the custom types in `rayon-hash`, we can
 instead read the raw hash table directly, for much better performance.
+
+```text
+test rayon_set_sum_parallel ... bench:   1,077,602 ns/iter (+/- 50,610)
+test rayon_set_sum_serial   ... bench:   6,363,125 ns/iter (+/- 101,513)
+test std_set_sum_parallel   ... bench:   8,519,683 ns/iter (+/- 219,785)
+test std_set_sum_serial     ... bench:   6,295,263 ns/iter (+/- 98,600)
+```
 
 This crate currently requires `rustc 1.21.0` or greater.
 
