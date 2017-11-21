@@ -35,4 +35,5 @@ pub mod hash_set {
     //! A hash set implemented as a `HashMap` where the value is `()`.
     // #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::std_hash::set::*;
+    pub use super::par::set::*;
 }

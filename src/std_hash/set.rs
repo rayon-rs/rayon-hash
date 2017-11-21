@@ -19,12 +19,6 @@ use std::ops::{BitOr, BitAnd, BitXor, Sub};
 use super::Recover;
 use super::map::{self, HashMap, Keys, RandomState};
 
-#[path="../par/set.rs"]
-pub mod par;
-
-pub use self::par::*;
-
-
 // Future Optimization (FIXME!)
 // =============================
 //
@@ -127,7 +121,7 @@ pub use self::par::*;
 #[derive(Clone)]
 // #[stable(feature = "rust1", since = "1.0.0")]
 pub struct HashSet<T, S = RandomState> {
-    map: HashMap<T, (), S>,
+    pub(crate) map: HashMap<T, (), S>,
 }
 
 impl<T: Hash + Eq> HashSet<T, RandomState> {

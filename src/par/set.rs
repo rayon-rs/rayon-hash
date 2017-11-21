@@ -2,8 +2,10 @@
 
 use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
 use rayon::iter::plumbing::UnindexedConsumer;
+use std::hash::{Hash, BuildHasher};
 
-use super::{Hash, HashSet, BuildHasher, map};
+use std_hash::map;
+use HashSet;
 
 
 pub struct ParIntoIter<T: Send> {
@@ -152,7 +154,7 @@ fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
           I: IntoParallelIterator,
           HashSet<T, S>: Extend<I::Item>
 {
-    let (list, len) = ::par::collect(par_iter);
+    let (list, len) = super::collect(par_iter);
 
     // Values may be already present or show multiple times in the iterator.
     // Reserve the entire length if the set is empty.
