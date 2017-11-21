@@ -6,7 +6,7 @@ use std::ptr;
 use rayon::prelude::*;
 use rayon::iter::plumbing::*;
 
-use std_hash::table::{RawTable, RawBucket, EMPTY_BUCKET};
+use std_hash::table::{RawTable, RawBucket};
 
 
 struct SplitBuckets<'a, K, V> {
@@ -47,7 +47,7 @@ impl<'a, K, V> Iterator for SplitBuckets<'a, K, V> {
             self.bucket.index_add(1);
 
             unsafe {
-                if *item.hash() != EMPTY_BUCKET {
+                if !item.is_empty() {
                     return Some(item);
                 }
             }
@@ -408,7 +408,7 @@ impl<'a, K: Send, V: Send> UnindexedProducer for ParIntoIterProducer<'a, K, V> {
         let iter = self.iter
             .by_ref()
             .map(|bucket| unsafe {
-                     *bucket.hash() = EMPTY_BUCKET;
+                     bucket.set_empty();
                      ptr::read(bucket.pair())
                  });
         folder.consume_iter(iter)
@@ -419,7 +419,7 @@ impl<'a, K: 'a, V: 'a> Drop for ParIntoIterProducer<'a, K, V> {
     fn drop(&mut self) {
         while let Some(bucket) = self.iter.next() {
             unsafe {
-                *bucket.hash() = EMPTY_BUCKET;
+                bucket.set_empty();
                 ptr::drop_in_place(bucket.pair());
             }
         }

@@ -33,7 +33,7 @@ use self::BucketState::*;
 /// usize::MAX / size_of(usize) buckets.)
 type HashUint = usize;
 
-pub(crate) const EMPTY_BUCKET: HashUint = 0;
+const EMPTY_BUCKET: HashUint = 0;
 const EMPTY: usize = 1;
 
 /// Special `Unique<HashUint>` that uses the lower bit of the pointer
@@ -235,7 +235,7 @@ fn can_alias_safehash_as_hash() {
 // RawBucket methods are unsafe as it's possible to
 // make a RawBucket point to invalid memory using safe code.
 impl<K, V> RawBucket<K, V> {
-    pub(crate) unsafe fn hash(&self) -> *mut HashUint {
+    unsafe fn hash(&self) -> *mut HashUint {
         self.hash_start.offset(self.idx as isize)
     }
     pub(crate) unsafe fn pair(&self) -> *mut (K, V) {
@@ -249,6 +249,12 @@ impl<K, V> RawBucket<K, V> {
     }
     pub(crate) fn index_add(&mut self, offset: usize) {
         self.idx += offset;
+    }
+    pub(crate) unsafe fn is_empty(&self) -> bool {
+        *self.hash() == EMPTY_BUCKET
+    }
+    pub(crate) unsafe fn set_empty(&self) {
+        *self.hash() = EMPTY_BUCKET;
     }
 }
 
