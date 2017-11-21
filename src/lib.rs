@@ -20,6 +20,7 @@ pub use self::hash_map::HashMap;
 // #[stable(feature = "rust1", since = "1.0.0")]
 pub use self::hash_set::HashSet;
 
+mod par;
 mod std_hash;
 
 // #[stable(feature = "rust1", since = "1.0.0")]

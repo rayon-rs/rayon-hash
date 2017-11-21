@@ -119,14 +119,7 @@ fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
           I: IntoParallelIterator,
           HashMap<K, V, S>: Extend<I::Item>
 {
-    use std::collections::LinkedList;
-
-    let list: LinkedList<_> = par_iter.into_par_iter()
-        .fold(Vec::new, |mut vec, elem| {
-            vec.push(elem);
-            vec
-        })
-        .collect();
+    let list = ::par::collect(par_iter);
 
     map.reserve(list.iter().map(Vec::len).sum());
     for vec in list {

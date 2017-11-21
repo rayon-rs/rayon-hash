@@ -152,14 +152,7 @@ fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
           I: IntoParallelIterator,
           HashSet<T, S>: Extend<I::Item>
 {
-    use std::collections::LinkedList;
-
-    let list: LinkedList<_> = par_iter.into_par_iter()
-        .fold(Vec::new, |mut vec, elem| {
-            vec.push(elem);
-            vec
-        })
-        .collect();
+    let list = ::par::collect(par_iter);
 
     set.reserve(list.iter().map(Vec::len).sum());
     for vec in list {
