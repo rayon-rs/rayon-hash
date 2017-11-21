@@ -2,8 +2,8 @@ use rayon::prelude::*;
 use std::collections::LinkedList;
 
 /// Helper for collecting parallel iterators to an intermediary
-pub(crate) fn collect<I: IntoParallelIterator>(iter: I) -> LinkedList<Vec<I::Item>> {
-    iter.into_par_iter()
+pub(crate) fn collect<I: IntoParallelIterator>(iter: I) -> (LinkedList<Vec<I::Item>>, usize) {
+    let list = iter.into_par_iter()
         .fold(Vec::new, |mut vec, elem| {
             vec.push(elem);
             vec
@@ -16,5 +16,8 @@ pub(crate) fn collect<I: IntoParallelIterator>(iter: I) -> LinkedList<Vec<I::Ite
         .reduce(LinkedList::new, |mut list1, mut list2| {
             list1.append(&mut list2);
             list1
-        })
+        });
+
+    let len = list.iter().map(Vec::len).sum();
+    (list, len)
 }

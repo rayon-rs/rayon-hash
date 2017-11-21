@@ -152,9 +152,14 @@ fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
           I: IntoParallelIterator,
           HashSet<T, S>: Extend<I::Item>
 {
-    let list = ::par::collect(par_iter);
+    let (list, len) = ::par::collect(par_iter);
 
-    set.reserve(list.iter().map(Vec::len).sum());
+    // Values may be already present or show multiple times in the iterator.
+    // Reserve the entire length if the set is empty.
+    // Otherwise reserve half the length (rounded up), so the set
+    // will only resize twice in the worst case.
+    let reserve = if set.is_empty() { len } else { (len + 1) / 2 };
+    set.reserve(reserve);
     for vec in list {
         set.extend(vec);
     }

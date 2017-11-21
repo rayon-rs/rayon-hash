@@ -119,9 +119,14 @@ fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
           I: IntoParallelIterator,
           HashMap<K, V, S>: Extend<I::Item>
 {
-    let list = ::par::collect(par_iter);
+    let (list, len) = ::par::collect(par_iter);
 
-    map.reserve(list.iter().map(Vec::len).sum());
+    // Keys may be already present or show multiple times in the iterator.
+    // Reserve the entire length if the map is empty.
+    // Otherwise reserve half the length (rounded up), so the map
+    // will only resize twice in the worst case.
+    let reserve = if map.is_empty() { len } else { (len + 1) / 2 };
+    map.reserve(reserve);
     for vec in list {
         map.extend(vec);
     }
