@@ -27,12 +27,6 @@ pub use std::collections::hash_map::{DefaultHasher, RandomState};
 use super::table::{self, Bucket, EmptyBucket, FullBucket, FullBucketMut, RawTable, SafeHash};
 use super::table::BucketState::{Empty, Full};
 
-#[path="../par/map.rs"]
-pub mod par;
-
-pub use self::par::*;
-
-
 const MIN_NONZERO_RAW_CAPACITY: usize = 32;     // must be a power of two
 
 /// The default behavior of HashMap implements a maximum load factor of 90.9%.
@@ -399,7 +393,7 @@ pub struct HashMap<K, V, S = RandomState> {
     // All hashes are keyed on these values, to prevent hash collision attacks.
     hash_builder: S,
 
-    table: RawTable<K, V>,
+    pub(crate) table: RawTable<K, V>,
 
     resize_policy: DefaultResizePolicy,
 }

@@ -1,10 +1,11 @@
 use rayon::prelude::*;
 use std::collections::LinkedList;
 
+pub mod map;
 pub mod set;
 
 /// Helper for collecting parallel iterators to an intermediary
-pub(crate) fn collect<I: IntoParallelIterator>(iter: I) -> (LinkedList<Vec<I::Item>>, usize) {
+fn collect<I: IntoParallelIterator>(iter: I) -> (LinkedList<Vec<I::Item>>, usize) {
     let list = iter.into_par_iter()
         .fold(Vec::new, |mut vec, elem| {
             vec.push(elem);

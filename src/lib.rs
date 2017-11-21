@@ -28,6 +28,7 @@ pub mod hash_map {
     //! A hash map implemented with linear probing and Robin Hood bucket stealing.
     // #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::std_hash::map::*;
+    pub use super::par::map::*;
 }
 
 // #[stable(feature = "rust1", since = "1.0.0")]

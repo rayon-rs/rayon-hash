@@ -1,9 +1,10 @@
 /// Rayon extensions to `HashMap`
 
 use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
+use std::hash::{Hash, BuildHasher};
 
-use super::{Hash, HashMap, BuildHasher};
-use super::super::table;
+use std_hash::table;
+use HashMap;
 
 pub use self::table::{ParIntoIter, ParIter, ParIterMut};
 pub use self::table::{ParKeys, ParValues, ParValuesMut};
@@ -119,7 +120,7 @@ fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
           I: IntoParallelIterator,
           HashMap<K, V, S>: Extend<I::Item>
 {
-    let (list, len) = ::par::collect(par_iter);
+    let (list, len) = super::collect(par_iter);
 
     // Keys may be already present or show multiple times in the iterator.
     // Reserve the entire length if the map is empty.
