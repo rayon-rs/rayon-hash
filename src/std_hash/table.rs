@@ -22,12 +22,6 @@ use ptr::Unique;
 
 use self::BucketState::*;
 
-#[path="../par/table.rs"]
-pub mod par;
-
-pub use self::par::*;
-
-
 /// Integer type used for stored hash values.
 ///
 /// No more than bit_width(usize) bits are needed to select a bucket.
@@ -39,7 +33,7 @@ pub use self::par::*;
 /// usize::MAX / size_of(usize) buckets.)
 type HashUint = usize;
 
-const EMPTY_BUCKET: HashUint = 0;
+pub(crate) const EMPTY_BUCKET: HashUint = 0;
 const EMPTY: usize = 1;
 
 /// Special `Unique<HashUint>` that uses the lower bit of the pointer
@@ -241,14 +235,20 @@ fn can_alias_safehash_as_hash() {
 // RawBucket methods are unsafe as it's possible to
 // make a RawBucket point to invalid memory using safe code.
 impl<K, V> RawBucket<K, V> {
-    unsafe fn hash(&self) -> *mut HashUint {
+    pub(crate) unsafe fn hash(&self) -> *mut HashUint {
         self.hash_start.offset(self.idx as isize)
     }
-    unsafe fn pair(&self) -> *mut (K, V) {
+    pub(crate) unsafe fn pair(&self) -> *mut (K, V) {
         self.pair_start.offset(self.idx as isize) as *mut (K, V)
     }
     unsafe fn hash_pair(&self) -> (*mut HashUint, *mut (K, V)) {
         (self.hash(), self.pair())
+    }
+    pub(crate) fn index(&self) -> usize {
+        self.idx
+    }
+    pub(crate) fn index_add(&mut self, offset: usize) {
+        self.idx += offset;
     }
 }
 
@@ -801,7 +801,7 @@ impl<K, V> RawTable<K, V> {
         }
     }
 
-    fn raw_bucket_at(&self, index: usize) -> RawBucket<K, V> {
+    pub(crate) fn raw_bucket_at(&self, index: usize) -> RawBucket<K, V> {
         let hashes_size = self.capacity() * size_of::<HashUint>();
         let pairs_size = self.capacity() * size_of::<(K, V)>();
 
@@ -839,6 +839,10 @@ impl<K, V> RawTable<K, V> {
     /// of elements ever `take`n.
     pub fn size(&self) -> usize {
         self.size
+    }
+
+    pub(crate) unsafe fn set_size(&mut self, size: usize) {
+        self.size = size;
     }
 
     fn raw_buckets(&self) -> RawBuckets<K, V> {

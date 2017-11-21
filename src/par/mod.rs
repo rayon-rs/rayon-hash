@@ -3,6 +3,7 @@ use std::collections::LinkedList;
 
 pub mod map;
 pub mod set;
+mod table;
 
 /// Helper for collecting parallel iterators to an intermediary
 fn collect<I: IntoParallelIterator>(iter: I) -> (LinkedList<Vec<I::Item>>, usize) {

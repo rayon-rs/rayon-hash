@@ -4,7 +4,7 @@ use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, 
 use rayon::iter::plumbing::UnindexedConsumer;
 use std::hash::{Hash, BuildHasher};
 
-use par::map;
+use super::map;
 use HashSet;
 
 

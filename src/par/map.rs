@@ -3,7 +3,7 @@
 use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
 use std::hash::{Hash, BuildHasher};
 
-use std_hash::table;
+use super::table;
 use HashMap;
 
 pub use self::table::{ParIntoIter, ParIter, ParIterMut};
