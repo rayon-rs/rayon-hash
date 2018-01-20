@@ -123,6 +123,7 @@ impl TaggedHashUintPtr {
 /// functions.
 pub struct RawTable<K, V> {
     capacity_mask: usize,
+    capacity_shift: u32,
     size: usize,
     hashes: TaggedHashUintPtr,
 
@@ -355,7 +356,7 @@ impl<K, V, M: Deref<Target = RawTable<K, V>>> Bucket<K, V, M> {
         // This is an uncommon case though, so avoid it in release builds.
         debug_assert!(table.capacity() > 0,
                       "Table should have capacity at this point");
-        let ib_index = ib_index & table.capacity_mask;
+        let ib_index = (ib_index >> table.capacity_shift) & table.capacity_mask;
         Bucket {
             raw: table.raw_bucket_at(ib_index),
             table,
@@ -544,7 +545,9 @@ impl<K, V, M: Deref<Target = RawTable<K, V>>> FullBucket<K, V, M> {
         // Calculates the distance one has to travel when going from
         // `hash mod capacity` onwards to `idx mod capacity`, wrapping around
         // if the destination is not reached before the end of the table.
-        (self.raw.idx.wrapping_sub(self.hash().inspect() as usize)) & self.table.capacity_mask
+        (self.raw.idx.wrapping_sub(
+            self.hash().inspect() as usize >> self.table.capacity_shift))
+        & self.table.capacity_mask
     }
 
     #[inline]
@@ -756,6 +759,7 @@ impl<K, V> RawTable<K, V> {
             return RawTable {
                 size: 0,
                 capacity_mask: capacity.wrapping_sub(1),
+                capacity_shift: 0,
                 hashes: TaggedHashUintPtr::new(EMPTY as *mut HashUint),
                 marker: marker::PhantomData,
             };
@@ -795,6 +799,7 @@ impl<K, V> RawTable<K, V> {
 
         RawTable {
             capacity_mask: capacity.wrapping_sub(1),
+            capacity_shift: capacity.leading_zeros(),
             size: 0,
             hashes: TaggedHashUintPtr::new(hashes),
             marker: marker::PhantomData,

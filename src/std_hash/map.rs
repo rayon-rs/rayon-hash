@@ -572,7 +572,7 @@ impl<K, V, S> HashMap<K, V, S>
 
     // The caller should ensure that invariants by Robin Hood Hashing hold
     // and that there's space in the underlying table.
-    fn insert_hashed_ordered(&mut self, hash: SafeHash, k: K, v: V) {
+    fn _insert_hashed_ordered(&mut self, hash: SafeHash, k: K, v: V) {
         let mut buckets = Bucket::new(&mut self.table, hash);
         let start_index = buckets.index();
 
@@ -808,7 +808,7 @@ impl<K, V, S> HashMap<K, V, S>
                 Full(bucket) => {
                     let h = bucket.hash();
                     let (b, k, v) = bucket.take();
-                    self.insert_hashed_ordered(h, k, v);
+                    self.insert_hashed_nocheck(h, k, v);
                     if b.table().size() == 0 {
                         break;
                     }
