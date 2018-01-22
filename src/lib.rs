@@ -10,7 +10,6 @@ extern crate rayon;
 #[cfg(test)] extern crate rand;
 
 mod heap;
-mod nonzero;
 mod ptr;
 
 #[cfg(all(rayon_hash_unstable, test))] use std::panic;

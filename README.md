@@ -19,23 +19,17 @@ test std_set_sum_parallel   ... bench:   8,519,683 ns/iter (+/- 219,785)
 test std_set_sum_serial     ... bench:   6,295,263 ns/iter (+/- 98,600)
 ```
 
-This crate currently requires `rustc 1.21.0` or greater.
+This crate currently requires `rustc 1.25.0` or greater.
 
 ## Known limitations
 
-Some compromises have been made to let this work on stable Rust, compared to
-the standard types that may use unstable features.  There are examples included
-which demonstrate the differences.
+Some compromises may be made to let this work on stable Rust, compared to the
+standard types that may use unstable features.  There is an example included
+which demonstrates one difference.
 
 - [`examples/may_dangle.rs`](examples/may_dangle.rs): Since we don't use the
   unstable `#[may_dangle]` attributes, the type parameters of `HashMap<K, V>`
   and `HashSet<T>` must strictly outlive the container itself.
-
-- [`examples/nonzero.rs`](examples/nonzero.rs): We use duplicated `Unique` and
-  `Shared` pointer types, containing a duplicate `NonZero` that's not marked
-  `#[lang = "non_zero"]`.  This means the compiler won't apply the intended
-  enum optimizations, so wrappers like `Option<HashMap<_,_>>` end up larger to
-  store the enum discriminant separately.
 
 ## Unstable features
 
