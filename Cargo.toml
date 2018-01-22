@@ -14,4 +14,4 @@ readme = "README.md"
 rayon = "0.9"
 
 [dev-dependencies]
-rand = "0.3"
+rand = "0.4"
