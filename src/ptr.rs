@@ -8,8 +8,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::fmt;
 use std::marker::PhantomData;
-use nonzero::NonZero;
+use std::ptr::NonNull;
 
 /// A wrapper around a raw non-null `*mut T` that indicates that the possessor
 /// of this wrapper owns the referent. Useful for building abstractions like
@@ -31,15 +32,20 @@ use nonzero::NonZero;
 ///
 /// Unlike `*mut T`, `Unique<T>` is covariant over `T`. This should always be correct
 /// for any type which upholds Unique's aliasing requirements.
-#[allow(missing_debug_implementations)]
 pub struct Unique<T: ?Sized> {
-    pointer: NonZero<*const T>,
+    pointer: NonNull<T>,
     // NOTE: this marker has no consequences for variance, but is necessary
     // for dropck to understand that we logically own a `T`.
     //
     // For details, see:
     // https://github.com/rust-lang/rfcs/blob/master/text/0769-sound-generic-drop.md#phantom-data
     _marker: PhantomData<T>,
+}
+
+impl<T: ?Sized> fmt::Debug for Unique<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Pointer::fmt(&self.as_ptr(), f)
+    }
 }
 
 /// `Unique` pointers are `Send` if `T` is `Send` because the data they
@@ -61,12 +67,12 @@ impl<T: ?Sized> Unique<T> {
     ///
     /// `ptr` must be non-null.
     pub unsafe fn new_unchecked(ptr: *mut T) -> Self {
-        Unique { pointer: NonZero::new_unchecked(ptr), _marker: PhantomData }
+        Unique { pointer: NonNull::new_unchecked(ptr), _marker: PhantomData }
     }
 
     /// Acquires the underlying `*mut` pointer.
     pub fn as_ptr(self) -> *mut T {
-        self.pointer.get() as *mut T
+        self.pointer.as_ptr()
     }
 }
 
