@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/rayon-hash/0.2")]
+#![doc(html_root_url = "https://docs.rs/rayon-hash/0.3")]
 
 #![cfg_attr(rayon_hash_unstable, feature(fused))]
 #![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
@@ -10,7 +10,6 @@ extern crate rayon;
 #[cfg(test)] extern crate rand;
 
 mod heap;
-mod nonzero;
 mod ptr;
 
 #[cfg(all(rayon_hash_unstable, test))] use std::panic;
