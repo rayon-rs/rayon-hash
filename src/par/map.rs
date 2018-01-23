@@ -1,9 +1,13 @@
 /// Rayon extensions to `HashMap`
+extern crate num_cpus;
 
-use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
+use rayon::iter::{ParallelIterator, IndexedParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
+
+use std::collections::LinkedList;
 
 use super::{Hash, HashMap, BuildHasher};
 use super::super::table;
+use super::super::table::SafeHash;
 
 pub use self::table::{ParIntoIter, ParIter, ParIterMut};
 pub use self::table::{ParKeys, ParValues, ParValuesMut};
@@ -74,13 +78,95 @@ impl<'a, K: Sync, V: Send, S> IntoParallelIterator for &'a mut HashMap<K, V, S> 
 impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
     where K: Eq + Hash + Send,
           V: Send,
-          S: BuildHasher + Default + Send
+          S: BuildHasher + Default + Send + Sync
 {
     fn from_par_iter<P>(par_iter: P) -> Self
         where P: IntoParallelIterator<Item = (K, V)>
     {
-        let mut map = HashMap::default();
-        map.par_extend(par_iter);
+        let mut map = HashMap::<K, V, S>::default();
+        // One shard per core, but round up to a power of two to keep the math simpler.
+        let num_shards = (num_cpus::get() - 1).next_power_of_two();
+        let shard_shift = num_shards.leading_zeros() + 1;
+
+        // Phase 1: Group inputs by shard.
+        let sharded_items: Vec<LinkedList<Vec<(SafeHash, K, V)>>> = {
+            let hasher = map.hasher();
+            par_iter.into_par_iter()
+                // Hash each item, then partition to that shard's vec.
+                .fold(|| { let mut v = Vec::with_capacity(num_shards);
+                          for _ in 0..num_shards {
+                              v.push(Vec::new());
+                          }
+                          v
+                         },
+                      |mut shards, item| {
+                          let (k, v) = item;
+                          let hash = table::make_hash(hasher, &k);
+                          let shard = ((hash.inspect() as usize) << 1) >> shard_shift;
+                          shards[shard].push((hash, k, v));
+                          shards
+                      })
+                // Wrap each shard vec in a linked list.
+                .map(|shards: Vec<_>| shards.into_iter().map(|vec| {
+                    let mut list = LinkedList::new();
+                    list.push_back(vec);
+                    list
+                }).collect())
+                // Concatenate linked lists for each shard to merge.
+                .reduce_with(|mut left: Vec<_>, right: Vec<_>| {
+                    left.iter_mut().zip(right.into_iter()).for_each(
+                        |(l, mut r): (&mut LinkedList<_>, LinkedList<_>)| l.append(&mut r));
+                    left
+                }).unwrap()
+        };
+
+        // Allocate enough table space. We may need less if there are duplicate keys.
+        let mut capacity: usize = 0;
+        for list in sharded_items.iter() {
+            for vec in list.iter() {
+                capacity += vec.len();
+            }
+        }
+        map.reserve(capacity);
+
+        // Phase 2, insert each shard in parallel.
+        let mut overflow_items: Vec<(usize, Vec<(SafeHash, K, V, usize)>)> = {
+            let segments = unsafe { map.get_shard_segments(num_shards) };
+            sharded_items.into_par_iter().with_max_len(1).zip(segments.into_par_iter()).map(
+                |(shard_items, mut segment)| {
+                    for vec in shard_items.into_iter() {
+                        for (hash, key, value) in vec.into_iter() {
+                            segment.insert(hash, key, value, 0);
+                        }
+                    }
+                    segment.take()
+                }).collect()
+        };
+
+        // Phase 3, insert overflow items into next shard.
+        let mut size: usize = overflow_items.iter().map(|&(n, _)| n).sum();
+        while overflow_items.iter().any(|&(_, ref items)| !items.is_empty()) {
+            // Rotate overflow to align on the next segment.
+            let wrap = overflow_items.pop().unwrap();
+            overflow_items.insert(0, wrap);
+            // Insert into segments, starting at the first offset.
+            let segments = unsafe { map.get_shard_segments(num_shards) };
+            let new_overflow = overflow_items.into_par_iter().with_max_len(1).zip(segments.into_par_iter()).map(
+                |((_, vec), mut segment)| {
+                    for (hash, key, value, displacement) in vec.into_iter() {
+                        segment.insert(hash, key, value, displacement);
+                    }
+                    segment.take()
+                }).collect();
+            overflow_items = new_overflow;
+            let extra_size: usize = overflow_items.iter().map(|&(n, _)| n).sum();
+            size += extra_size;
+        }
+
+        // Manually set aggregated size.
+        unsafe {
+            map.set_size(size);
+        }
         map
     }
 }
@@ -336,5 +422,72 @@ mod test_par_map {
         assert_eq!(a[&1], "one");
         assert_eq!(a[&2], "two");
         assert_eq!(a[&3], "three");
+    }
+
+    fn verify_state<S: BuildHasher + Default + Sync + Send>(num: usize) {
+        for _ in 0..10 {
+            // Insert a second version of each key twice, so we know later
+            // values always overwrite earlier ones.
+            let mut m: HashMap<_, _, S> = (0..2*num).into_par_iter().map(|x| (x%num, x)).collect();
+
+            assert_eq!(num, m.len());
+
+            for i in 0..num {
+                let r = m.get(&i);
+                assert_eq!(r, Some(&(i + num)));
+            }
+
+            for i in num..2*num {
+                assert!(!m.contains_key(&i));
+            }
+
+            // remove
+            for i in 0..num {
+                assert!(m.remove(&i).is_some());
+
+                for j in 0..i+1 {
+                    assert!(!m.contains_key(&j));
+                }
+
+                for j in i+1..num {
+                    assert!(m.contains_key(&j));
+                }
+            }
+        }
+    }
+
+    use std::hash::BuildHasher;
+    use std::collections::hash_map::RandomState;
+
+    #[derive(Default)]
+    struct CollisionHash {}
+
+    unsafe impl Send for CollisionHash {}
+    unsafe impl Sync for CollisionHash {}
+
+    impl Hasher for CollisionHash {
+        fn finish(&self) -> u64 {
+            7
+        }
+
+        fn write(&mut self, _: &[u8]) {}
+    }
+
+    impl BuildHasher for CollisionHash {
+        type Hasher = CollisionHash;
+
+        fn build_hasher(&self) -> Self::Hasher {
+            CollisionHash {}
+        }
+    }
+
+    #[test]
+    fn test_collect_bad_hash() {
+        verify_state::<CollisionHash>(100);
+    }
+
+    #[test]
+    fn test_collect_state() {
+        verify_state::<RandomState>(1000);
     }
 }

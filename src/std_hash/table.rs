@@ -124,7 +124,7 @@ impl TaggedHashUintPtr {
 pub struct RawTable<K, V> {
     capacity_mask: usize,
     capacity_shift: u32,
-    size: usize,
+    pub size: usize,
     hashes: TaggedHashUintPtr,
 
     // Because K/V do not appear directly in any of the types in the struct,
@@ -359,6 +359,13 @@ impl<K, V, M: Deref<Target = RawTable<K, V>>> Bucket<K, V, M> {
         let ib_index = (ib_index >> table.capacity_shift) & table.capacity_mask;
         Bucket {
             raw: table.raw_bucket_at(ib_index),
+            table,
+        }
+    }
+
+    pub fn at_offset(table: M, offset: usize) -> Bucket<K, V, M> {
+        Bucket {
+            raw: table.raw_bucket_at(offset),
             table,
         }
     }

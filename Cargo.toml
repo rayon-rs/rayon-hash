@@ -11,6 +11,7 @@ license = "Apache-2.0/MIT"
 readme = "README.md"
 
 [dependencies]
+num_cpus = "1.2"
 rayon = "0.9"
 
 [dev-dependencies]

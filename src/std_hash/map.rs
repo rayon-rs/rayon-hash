@@ -2531,6 +2531,96 @@ impl<K, S, Q: ?Sized> super::Recover<Q> for HashMap<K, (), S>
     }
 }
 
+pub struct RawSegment<'a, K, V> where K: Eq + 'a, V:'a {
+    // Backing table.
+    table: &'a mut RawTable<K, V>,
+    // First index in this segment.
+    start: usize,
+    // First index past this segment's range.
+    end: usize,
+    // Number of elements inserted into the segment.
+    size: usize,
+    // Items that need to robin-hood past the end of this range.
+    overflow: Vec<(SafeHash, K, V, usize)>,
+}
+
+impl<'a, K, V> RawSegment<'a, K, V>
+    where K: Eq,
+{
+    pub fn insert(&mut self, mut hash: SafeHash, mut key: K, mut value: V, mut displacement: usize) {
+        let table: &mut RawTable<K, V> = self.table;
+        let mut probe = if displacement > 0 {
+            Bucket::at_offset(table, self.start)
+        } else {
+            Bucket::new(table, hash)
+        };
+
+        while probe.index() < self.end && probe.index() >= self.start {
+            let mut full = match probe.peek() {
+                Empty(bucket) => {
+                    // Found a hole! Insert values.
+                    // bucket.put unatomically increments the table size. When
+                    // this is running in parallel, it's likely to result in a
+                    // non-deterministic value, so we track it separately.
+                    bucket.put(hash, key, value);
+                    self.size += 1;
+                    return;
+                }
+                Full(bucket) => bucket,
+            };
+
+            if full.hash() == hash && *full.read().0 == key {
+                // Same key, overwrite old value.
+                mem::swap(&mut value, full.read_mut().1);
+                return;
+            }
+
+            let probe_displacement = full.displacement();
+            if probe_displacement < displacement {
+                // The probe is closer to its hash than we are.
+                // Move our entry here and continue with the swapped one.
+                let (old_hash, old_key, old_value) = full.replace(hash, key, value);
+                hash = old_hash;
+                key = old_key;
+                value = old_value;
+                displacement = probe_displacement;
+            }
+
+            displacement += 1;
+            probe = full.next();
+        }
+        // Probed past the end of the segment
+        self.overflow.push((hash, key, value, displacement));
+    }
+
+    pub fn take(self) -> (usize, Vec<(SafeHash, K, V, usize)>) {
+        (self.size, self.overflow)
+    }
+}
+
+// Holes punched into the public HashMap API to allow implementing parallel collect.
+impl<K, V, S> HashMap<K, V, S> where K: Eq {
+    pub unsafe fn get_shard_segments<'a>(&'a mut self, num_shards: usize) -> Vec<RawSegment<'a, K, V>> {
+        let shard_size = self.table.capacity() / num_shards;
+        let mut segments = Vec::new();
+        for shard in 0..num_shards {
+            let table = &mut *(&mut self.table as *mut RawTable<K, V>);
+            segments.push(RawSegment {
+                table: table,
+                start: shard_size * shard,
+                end: shard_size * (shard + 1),
+                size: 0,
+                overflow: Vec::new(),
+            });
+        }
+        segments
+    }
+
+    pub unsafe fn set_size(&mut self, size: usize) {
+        self.table.size = size;
+    }
+}
+
 #[allow(dead_code)]
 fn assert_covariance() {
     fn map_key<'new>(v: HashMap<&'static str, u8>) -> HashMap<&'new str, u8> {
