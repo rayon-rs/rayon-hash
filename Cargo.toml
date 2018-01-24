@@ -15,4 +15,5 @@ num_cpus = "1.2"
 rayon = "0.9"
 
 [dev-dependencies]
+fnv = "1.0.6"
 rand = "0.4"

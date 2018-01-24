@@ -1,9 +1,10 @@
 #![feature(test)]
 
-extern crate test;
+extern crate fnv;
 extern crate rand;
 extern crate rayon;
 extern crate rayon_hash;
+extern crate test;
 
 use rand::{Rng, SeedableRng, XorShiftRng};
 use std::collections::{HashMap as StdHashMap, HashSet as StdHashSet};
@@ -11,6 +12,7 @@ use rayon_hash::{HashMap as RayonHashMap, HashSet as RayonHashSet};
 use std::iter::FromIterator;
 use rayon::prelude::*;
 use test::Bencher;
+use fnv::FnvBuildHasher;
 
 
 fn default_set<C: FromIterator<u32>>(n: usize) -> C {
@@ -43,7 +45,7 @@ macro_rules! bench_collect {
         #[bench]
         fn $id(b: &mut Bencher) {
             b.iter(|| {
-                let set: $ty = (0..1<<20).$iter().map(|x| (x >> 1, ())).collect();
+                let set: $ty = (0u32 .. 1<<20).$iter().map(|x| (x >> 1, ())).collect();
                 assert_eq!(1<<19, set.len());
             })
         }
@@ -54,3 +56,6 @@ bench_collect!{std_collect_serial, StdHashMap<_, _>, into_iter}
 bench_collect!{std_collect_parallel, StdHashMap<_, _>, into_par_iter}
 bench_collect!{rayon_collect_serial, RayonHashMap<_, _>, into_iter}
 bench_collect!{rayon_collect_parallel, RayonHashMap<_, _>, into_par_iter}
+
+bench_collect!{rayon_collect_fnv, RayonHashMap<_, _, FnvBuildHasher>, into_iter}
+bench_collect!{std_collect_fnv, StdHashMap<_, _, FnvBuildHasher>, into_iter}
