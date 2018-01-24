@@ -84,9 +84,10 @@ impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
         where P: IntoParallelIterator<Item = (K, V)>
     {
         let mut map = HashMap::<K, V, S>::default();
-        // One shard per core, but round up to a power of two to keep the math simpler.
-        let num_shards = (num_cpus::get() - 1).next_power_of_two();
-        let shard_shift = num_shards.leading_zeros() + 1;
+        // 1-2 shards per cpu, but rounded up to a power of two to keep the math simple.
+        let num_shards = num_cpus::get().next_power_of_two();
+        let shard_shift = num_shards.leading_zeros();
+        const SHARD_MASK: usize = !0 >> 1;
 
         // Phase 1: Group inputs by shard.
         let sharded_items: Vec<LinkedList<Vec<(SafeHash, K, V)>>> = {
@@ -102,7 +103,7 @@ impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
                       |mut shards, item| {
                           let (k, v) = item;
                           let hash = table::make_hash(hasher, &k);
-                          let shard = ((hash.inspect() as usize) << 1) >> shard_shift;
+                          let shard = (hash.inspect() as usize & SHARD_MASK) >> shard_shift;
                           shards[shard].push((hash, k, v));
                           shards
                       })
