@@ -2547,6 +2547,14 @@ pub struct RawSegment<'a, K, V> where K: Eq + 'a, V:'a {
 impl<'a, K, V> RawSegment<'a, K, V>
     where K: Eq,
 {
+    // Sets all buckets to empty, leaves key/values uninitialized.
+    pub unsafe fn initialize(&mut self) {
+        self.table.initialize_segment(self.start, self.end);
+        //ptr::write_bytes(self.table.hashes.ptr().offset(self.start), 0, self.end - self.start);
+    }
+
+    // Inserts the element into the segment, or into our overflow buffer.
+    // Must be called only after initialize.
     pub fn insert(&mut self, mut hash: SafeHash, mut key: K, mut value: V, mut displacement: usize) {
         let table: &mut RawTable<K, V> = self.table;
         let mut probe = if displacement > 0 {
@@ -2560,9 +2568,10 @@ impl<'a, K, V> RawSegment<'a, K, V>
                 Empty(bucket) => {
                     // Found a hole! Insert values.
                     // bucket.put unatomically increments the table size. When
-                    // this is running in parallel, it's likely to result in a
-                    // non-deterministic value, so we track it separately.
-                    bucket.put(hash, key, value);
+                    // this is running in parallel, it results in a lot of
+                    // cache contention, so we avoid the table count and keep
+                    // track of it here.
+                    bucket.put_uncounted(hash, key, value);
                     self.size += 1;
                     return;
                 }
@@ -2600,6 +2609,11 @@ impl<'a, K, V> RawSegment<'a, K, V>
 
 // Holes punched into the public HashMap API to allow implementing parallel collect.
 impl<K, V, S> HashMap<K, V, S> where K: Eq {
+    pub unsafe fn reserve_uninitialized(&mut self, elements: usize) {
+        let capacity = self.resize_policy.raw_capacity(elements);
+        self.table = RawTable::new_uninitialized(capacity);
+    }
+
     pub unsafe fn get_shard_segments<'a>(&'a mut self, num_shards: usize) -> Vec<RawSegment<'a, K, V>> {
         let shard_size = self.table.capacity() / num_shards;
         let mut segments = Vec::new();

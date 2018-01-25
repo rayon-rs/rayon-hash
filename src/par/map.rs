@@ -90,7 +90,7 @@ impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
         const SHARD_MASK: usize = !0 >> 1;
 
         // Phase 1: Group inputs by shard.
-        let sharded_items: Vec<LinkedList<Vec<(SafeHash, K, V)>>> = {
+        let (capacity, sharded_items): (usize, Vec<LinkedList<Vec<(SafeHash, K, V)>>>) = {
             let hasher = map.hasher();
             par_iter.into_par_iter()
                 // Hash each item, then partition to that shard's vec.
@@ -98,43 +98,38 @@ impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
                           for _ in 0..num_shards {
                               v.push(Vec::new());
                           }
-                          v
+                          (0, v)
                          },
-                      |mut shards, item| {
+                      |(size, mut shards), item| {
                           let (k, v) = item;
                           let hash = table::make_hash(hasher, &k);
                           let shard = (hash.inspect() as usize & SHARD_MASK) >> shard_shift;
                           shards[shard].push((hash, k, v));
-                          shards
+                          (size + 1, shards)
                       })
                 // Wrap each shard vec in a linked list.
-                .map(|shards: Vec<_>| shards.into_iter().map(|vec| {
+                .map(|(size, shards): (usize, Vec<_>)| (size, shards.into_iter().map(|vec| {
                     let mut list = LinkedList::new();
                     list.push_back(vec);
                     list
-                }).collect())
+                }).collect()))
                 // Concatenate linked lists for each shard to merge.
-                .reduce_with(|mut left: Vec<_>, right: Vec<_>| {
+                .reduce_with(|(lsize, mut left): (usize, Vec<_>), (rsize, right): (usize, Vec<_>)| {
                     left.iter_mut().zip(right.into_iter()).for_each(
                         |(l, mut r): (&mut LinkedList<_>, LinkedList<_>)| l.append(&mut r));
-                    left
+                    (lsize + rsize, left)
                 }).unwrap()
         };
 
         // Allocate enough table space. We may need less if there are duplicate keys.
-        let mut capacity: usize = 0;
-        for list in sharded_items.iter() {
-            for vec in list.iter() {
-                capacity += vec.len();
-            }
-        }
-        map.reserve(capacity);
+        unsafe { map.reserve_uninitialized(capacity); }
 
         // Phase 2, insert each shard in parallel.
         let mut overflow_items: Vec<(usize, Vec<(SafeHash, K, V, usize)>)> = {
             let segments = unsafe { map.get_shard_segments(num_shards) };
             sharded_items.into_par_iter().with_max_len(1).zip(segments.into_par_iter()).map(
                 |(shard_items, mut segment)| {
+                    unsafe { segment.initialize(); }
                     for vec in shard_items.into_iter() {
                         for (hash, key, value) in vec.into_iter() {
                             segment.insert(hash, key, value, 0);

@@ -501,6 +501,20 @@ impl<K, V, M> EmptyBucket<K, V, M>
         }
     }
 
+    // Puts the given key/value/hash into the bucket, but without updating the
+    // table's item count. The caller must ensure this item gets counted later.
+    pub fn put_uncounted(self, hash: SafeHash, key: K, value: V) -> FullBucket<K, V, M> {
+        unsafe {
+            *self.raw.hash() = hash.inspect();
+            ptr::write(self.raw.pair(), (key, value));
+        }
+
+        FullBucket {
+            raw: self.raw,
+            table: self.table,
+        }
+    }
+
     /// Puts given key, remain value uninitialized.
     /// It is only used for inplacement insertion.
     #[cfg(rayon_hash_unstable)]
@@ -761,7 +775,7 @@ fn test_offset_calculation() {
 impl<K, V> RawTable<K, V> {
     /// Does not initialize the buckets. The caller should ensure they,
     /// at the very least, set every hash to EMPTY_BUCKET.
-    unsafe fn new_uninitialized(capacity: usize) -> RawTable<K, V> {
+    pub unsafe fn new_uninitialized(capacity: usize) -> RawTable<K, V> {
         if capacity == 0 {
             return RawTable {
                 size: 0,
@@ -840,6 +854,11 @@ impl<K, V> RawTable<K, V> {
             ptr::write_bytes(ret.hashes.ptr(), 0, capacity);
             ret
         }
+    }
+
+    // Initializes memory for entries in range [start, end)
+    pub unsafe fn initialize_segment(&mut self, start: usize, end: usize) {
+        ptr::write_bytes(self.hashes.ptr().offset(start as isize), 0, end - start);
     }
 
     /// The hashtable's capacity, similar to a vector's.
