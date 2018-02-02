@@ -1391,9 +1391,14 @@ impl<'a, K, Q: ?Sized, V, S> Index<&'a Q> for HashMap<K, V, S>
 {
     type Output = V;
 
+    /// Returns a reference to the value corresponding to the supplied key.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the key is not present in the `HashMap`.
     #[inline]
-    fn index(&self, index: &Q) -> &V {
-        self.get(index).expect("no entry found for key")
+    fn index(&self, key: &Q) -> &V {
+        self.get(key).expect("no entry found for key")
     }
 }
 
@@ -1984,7 +1989,7 @@ impl<'a, K, V> Placer<V> for Entry<'a, K, V> {
 // #[unstable(feature = "collection_placement",
 //            reason = "placement protocol is subject to change",
 //            issue = "30172")]
-impl<'a, K, V> Place<V> for EntryPlace<'a, K, V> {
+unsafe impl<'a, K, V> Place<V> for EntryPlace<'a, K, V> {
     fn pointer(&mut self) -> *mut V {
         self.bucket.read_mut().1
     }
