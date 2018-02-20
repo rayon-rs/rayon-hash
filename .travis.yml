@@ -6,7 +6,7 @@ matrix:
   include:
     #- rust: 1.25.0
     #- rust: stable
-    #- rust: beta
+    - rust: beta
     - rust: nightly
 
     - rust: nightly
