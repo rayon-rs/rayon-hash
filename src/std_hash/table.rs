@@ -22,12 +22,6 @@ use ptr::Unique;
 
 use self::BucketState::*;
 
-#[path="../par/table.rs"]
-pub mod par;
-
-pub use self::par::*;
-
-
 /// Integer type used for stored hash values.
 ///
 /// No more than bit_width(usize) bits are needed to select a bucket.
@@ -244,11 +238,23 @@ impl<K, V> RawBucket<K, V> {
     unsafe fn hash(&self) -> *mut HashUint {
         self.hash_start.offset(self.idx as isize)
     }
-    unsafe fn pair(&self) -> *mut (K, V) {
+    pub(crate) unsafe fn pair(&self) -> *mut (K, V) {
         self.pair_start.offset(self.idx as isize) as *mut (K, V)
     }
     unsafe fn hash_pair(&self) -> (*mut HashUint, *mut (K, V)) {
         (self.hash(), self.pair())
+    }
+    pub(crate) fn index(&self) -> usize {
+        self.idx
+    }
+    pub(crate) fn index_add(&mut self, offset: usize) {
+        self.idx += offset;
+    }
+    pub(crate) unsafe fn is_empty(&self) -> bool {
+        *self.hash() == EMPTY_BUCKET
+    }
+    pub(crate) unsafe fn set_empty(&self) {
+        *self.hash() = EMPTY_BUCKET;
     }
 }
 
@@ -801,7 +807,7 @@ impl<K, V> RawTable<K, V> {
         }
     }
 
-    fn raw_bucket_at(&self, index: usize) -> RawBucket<K, V> {
+    pub(crate) fn raw_bucket_at(&self, index: usize) -> RawBucket<K, V> {
         let hashes_size = self.capacity() * size_of::<HashUint>();
         let pairs_size = self.capacity() * size_of::<(K, V)>();
 
@@ -839,6 +845,10 @@ impl<K, V> RawTable<K, V> {
     /// of elements ever `take`n.
     pub fn size(&self) -> usize {
         self.size
+    }
+
+    pub(crate) unsafe fn set_size(&mut self, size: usize) {
+        self.size = size;
     }
 
     fn raw_buckets(&self) -> RawBuckets<K, V> {

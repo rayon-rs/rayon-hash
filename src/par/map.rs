@@ -1,9 +1,10 @@
 /// Rayon extensions to `HashMap`
 
 use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
+use std::hash::{Hash, BuildHasher};
 
-use super::{Hash, HashMap, BuildHasher};
-use super::super::table;
+use super::table;
+use HashMap;
 
 pub use self::table::{ParIntoIter, ParIter, ParIterMut};
 pub use self::table::{ParKeys, ParValues, ParValuesMut};
@@ -119,16 +120,14 @@ fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
           I: IntoParallelIterator,
           HashMap<K, V, S>: Extend<I::Item>
 {
-    use std::collections::LinkedList;
+    let (list, len) = super::collect(par_iter);
 
-    let list: LinkedList<_> = par_iter.into_par_iter()
-        .fold(Vec::new, |mut vec, elem| {
-            vec.push(elem);
-            vec
-        })
-        .collect();
-
-    map.reserve(list.iter().map(Vec::len).sum());
+    // Keys may be already present or show multiple times in the iterator.
+    // Reserve the entire length if the map is empty.
+    // Otherwise reserve half the length (rounded up), so the map
+    // will only resize twice in the worst case.
+    let reserve = if map.is_empty() { len } else { (len + 1) / 2 };
+    map.reserve(reserve);
     for vec in list {
         map.extend(vec);
     }

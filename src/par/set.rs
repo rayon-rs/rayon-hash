@@ -2,8 +2,10 @@
 
 use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
 use rayon::iter::plumbing::UnindexedConsumer;
+use std::hash::{Hash, BuildHasher};
 
-use super::{Hash, HashSet, BuildHasher, map};
+use super::map;
+use HashSet;
 
 
 pub struct ParIntoIter<T: Send> {
@@ -152,16 +154,14 @@ fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
           I: IntoParallelIterator,
           HashSet<T, S>: Extend<I::Item>
 {
-    use std::collections::LinkedList;
+    let (list, len) = super::collect(par_iter);
 
-    let list: LinkedList<_> = par_iter.into_par_iter()
-        .fold(Vec::new, |mut vec, elem| {
-            vec.push(elem);
-            vec
-        })
-        .collect();
-
-    set.reserve(list.iter().map(Vec::len).sum());
+    // Values may be already present or show multiple times in the iterator.
+    // Reserve the entire length if the set is empty.
+    // Otherwise reserve half the length (rounded up), so the set
+    // will only resize twice in the worst case.
+    let reserve = if set.is_empty() { len } else { (len + 1) / 2 };
+    set.reserve(reserve);
     for vec in list {
         set.extend(vec);
     }

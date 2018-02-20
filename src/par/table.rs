@@ -6,7 +6,7 @@ use std::ptr;
 use rayon::prelude::*;
 use rayon::iter::plumbing::*;
 
-use std_hash::table::{RawTable, RawBucket, EMPTY_BUCKET};
+use std_hash::table::{RawTable, RawBucket};
 
 
 struct SplitBuckets<'a, K, V> {
@@ -26,11 +26,11 @@ impl<'a, K, V> SplitBuckets<'a, K, V> {
 
     fn split<P: From<Self>>(&self) -> (P, Option<P>) {
         let mut left = SplitBuckets { ..*self };
-        let len = left.end - left.bucket.idx;
+        let len = left.end - left.bucket.index();
         if len > 1 {
             let mut right = SplitBuckets { ..left };
-            right.bucket.idx += len / 2;
-            left.end = right.bucket.idx;
+            right.bucket.index_add(len / 2);
+            left.end = right.bucket.index();
             (P::from(left), Some(P::from(right)))
         } else {
             (P::from(left), None)
@@ -42,12 +42,12 @@ impl<'a, K, V> Iterator for SplitBuckets<'a, K, V> {
     type Item = RawBucket<K, V>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        while self.bucket.idx < self.end {
+        while self.bucket.index() < self.end {
             let item = self.bucket;
-            self.bucket.idx += 1;
+            self.bucket.index_add(1);
 
             unsafe {
-                if *item.hash() != EMPTY_BUCKET {
+                if !item.is_empty() {
                     return Some(item);
                 }
             }
@@ -372,7 +372,7 @@ impl<K: Send, V: Send> ParallelIterator for ParIntoIter<K, V> {
     {
         // Pre-set the map size to zero, indicating all items drained.
         let mut table = self.table;
-        table.size = 0;
+        unsafe { table.set_size(0); }
 
         let buckets = SplitBuckets::new(&table);
         let producer = ParIntoIterProducer::from(buckets);
@@ -408,7 +408,7 @@ impl<'a, K: Send, V: Send> UnindexedProducer for ParIntoIterProducer<'a, K, V> {
         let iter = self.iter
             .by_ref()
             .map(|bucket| unsafe {
-                     *bucket.hash() = EMPTY_BUCKET;
+                     bucket.set_empty();
                      ptr::read(bucket.pair())
                  });
         folder.consume_iter(iter)
@@ -419,7 +419,7 @@ impl<'a, K: 'a, V: 'a> Drop for ParIntoIterProducer<'a, K, V> {
     fn drop(&mut self) {
         while let Some(bucket) = self.iter.next() {
             unsafe {
-                *bucket.hash() = EMPTY_BUCKET;
+                bucket.set_empty();
                 ptr::drop_in_place(bucket.pair());
             }
         }

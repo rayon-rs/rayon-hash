@@ -10,7 +10,7 @@
 
 //! Unordered containers, implemented as hash-tables
 
-mod table;
+pub(crate) mod table;
 pub mod map;
 pub mod set;
 
