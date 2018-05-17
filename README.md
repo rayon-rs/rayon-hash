@@ -19,7 +19,7 @@ test std_set_sum_parallel   ... bench:   8,519,683 ns/iter (+/- 219,785)
 test std_set_sum_serial     ... bench:   6,295,263 ns/iter (+/- 98,600)
 ```
 
-This crate currently requires `rustc 1.25.0` or greater.
+This crate currently requires `rustc 1.26.0` or greater.
 
 ## Known limitations
 

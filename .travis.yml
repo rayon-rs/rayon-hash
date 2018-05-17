@@ -4,13 +4,14 @@ sudo: false
 matrix:
   fast_finish: true
   include:
-    #- rust: 1.25.0
-    #- rust: stable
+    - rust: 1.26.0
+    - rust: stable
     - rust: beta
     - rust: nightly
 
     - rust: nightly
       env: RUSTFLAGS='--cfg rayon_hash_unstable'
+           RUSTDOCFLAGS='--cfg rayon_hash_unstable'
 
 branches:
   only:

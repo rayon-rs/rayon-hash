@@ -1,19 +1,15 @@
 #![doc(html_root_url = "https://docs.rs/rayon-hash/0.3")]
 
-#![cfg_attr(rayon_hash_unstable, feature(fused))]
-#![cfg_attr(rayon_hash_unstable, feature(placement_new_protocol))]
-
-#![cfg_attr(all(rayon_hash_unstable, test), feature(placement_in_syntax))]
+#![cfg_attr(rayon_hash_unstable, feature(allocator_api))]
 
 extern crate rayon;
 
 #[cfg(test)] extern crate rand;
 
+mod alloc;
 mod heap;
-mod ptr;
 
-#[cfg(all(rayon_hash_unstable, test))] use std::panic;
-#[cfg(test)] use std::cell;
+mod ptr;
 
 // #[stable(feature = "rust1", since = "1.0.0")]
 pub use self::hash_map::HashMap;
