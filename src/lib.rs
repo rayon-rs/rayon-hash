@@ -1,14 +1,10 @@
-#![doc(html_root_url = "https://docs.rs/rayon-hash/0.3")]
-
-#![cfg_attr(rayon_hash_unstable, feature(allocator_api))]
+#![doc(html_root_url = "https://docs.rs/rayon-hash/0.4")]
 
 extern crate rayon;
 
 #[cfg(test)] extern crate rand;
 
 mod alloc;
-mod heap;
-
 mod ptr;
 
 // #[stable(feature = "rust1", since = "1.0.0")]

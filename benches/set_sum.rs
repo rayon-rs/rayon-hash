@@ -6,6 +6,7 @@ extern crate rayon;
 extern crate rayon_hash;
 
 use rand::{Rng, SeedableRng, XorShiftRng};
+use rand::distributions::Standard;
 use std::collections::HashSet as StdHashSet;
 use rayon_hash::HashSet as RayonHashSet;
 use std::iter::FromIterator;
@@ -14,8 +15,9 @@ use test::Bencher;
 
 
 fn default_set<C: FromIterator<u32>>(n: usize) -> C {
-    let mut rng = XorShiftRng::from_seed([0, 1, 2, 3]);
-    (0..n).map(|_| rng.next_u32()).collect()
+    let mut seed = <XorShiftRng as SeedableRng>::Seed::default();
+    (0..).zip(seed.as_mut()).for_each(|(i, x)| *x = i);
+    XorShiftRng::from_seed(seed).sample_iter(&Standard).take(n).collect()
 }
 
 macro_rules! bench_set_sum {

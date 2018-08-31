@@ -1,7 +1,7 @@
 [package]
 authors = ["Josh Stone <cuviper@gmail.com>"]
 name = "rayon-hash"
-version = "0.3.0"
+version = "0.4.0"
 repository = "https://github.com/rayon-rs/rayon-hash"
 documentation = "https://docs.rs/rayon-hash/"
 keywords = ["parallel", "iterator", "hash", "map", "set"]
@@ -14,4 +14,4 @@ readme = "README.md"
 rayon = "1.0"
 
 [dev-dependencies]
-rand = "0.4"
+rand = "0.5"

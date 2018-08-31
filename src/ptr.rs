@@ -32,7 +32,7 @@ use std::ptr::NonNull;
 ///
 /// Unlike `*mut T`, `Unique<T>` is covariant over `T`. This should always be correct
 /// for any type which upholds Unique's aliasing requirements.
-pub struct Unique<T: ?Sized> {
+pub(crate) struct Unique<T: ?Sized> {
     pointer: NonNull<T>,
     // NOTE: this marker has no consequences for variance, but is necessary
     // for dropck to understand that we logically own a `T`.
@@ -66,12 +66,12 @@ impl<T: ?Sized> Unique<T> {
     /// # Safety
     ///
     /// `ptr` must be non-null.
-    pub unsafe fn new_unchecked(ptr: *mut T) -> Self {
+    pub(crate) unsafe fn new_unchecked(ptr: *mut T) -> Self {
         Unique { pointer: NonNull::new_unchecked(ptr), _marker: PhantomData }
     }
 
     /// Acquires the underlying `*mut` pointer.
-    pub fn as_ptr(self) -> *mut T {
+    pub(crate) fn as_ptr(self) -> *mut T {
         self.pointer.as_ptr()
     }
 }
