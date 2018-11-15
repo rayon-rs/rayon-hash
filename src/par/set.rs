@@ -1,12 +1,10 @@
-/// Rayon extensions for `HashSet`
-
-use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
 use rayon::iter::plumbing::UnindexedConsumer;
-use std::hash::{Hash, BuildHasher};
+/// Rayon extensions for `HashSet`
+use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelExtend, ParallelIterator};
+use std::hash::{BuildHasher, Hash};
 
 use super::map;
 use HashSet;
-
 
 pub struct ParIntoIter<T: Send> {
     inner: map::ParIntoIter<T, ()>,
@@ -36,39 +34,28 @@ pub struct ParUnion<'a, T: Sync + 'a, S: Sync + 'a> {
     b: &'a HashSet<T, S>,
 }
 
-
 impl<T, S> HashSet<T, S>
-    where T: Eq + Hash + Sync,
-          S: BuildHasher + Sync
+where
+    T: Eq + Hash + Sync,
+    S: BuildHasher + Sync,
 {
     pub fn par_difference<'a>(&'a self, other: &'a Self) -> ParDifference<'a, T, S> {
-        ParDifference {
-            a: self,
-            b: other,
-        }
+        ParDifference { a: self, b: other }
     }
 
-    pub fn par_symmetric_difference<'a>(&'a self,
-                                        other: &'a Self)
-                                        -> ParSymmetricDifference<'a, T, S> {
-        ParSymmetricDifference {
-            a: self,
-            b: other,
-        }
+    pub fn par_symmetric_difference<'a>(
+        &'a self,
+        other: &'a Self,
+    ) -> ParSymmetricDifference<'a, T, S> {
+        ParSymmetricDifference { a: self, b: other }
     }
 
     pub fn par_intersection<'a>(&'a self, other: &'a Self) -> ParIntersection<'a, T, S> {
-        ParIntersection {
-            a: self,
-            b: other,
-        }
+        ParIntersection { a: self, b: other }
     }
 
     pub fn par_union<'a>(&'a self, other: &'a Self) -> ParUnion<'a, T, S> {
-        ParUnion {
-            a: self,
-            b: other,
-        }
+        ParUnion { a: self, b: other }
     }
 
     pub fn par_is_disjoint(&self, other: &Self) -> bool {
@@ -88,13 +75,14 @@ impl<T, S> HashSet<T, S>
     }
 }
 
-
 impl<T: Send, S> IntoParallelIterator for HashSet<T, S> {
     type Item = T;
     type Iter = ParIntoIter<T>;
 
     fn into_par_iter(self) -> Self::Iter {
-        ParIntoIter { inner: self.map.into_par_iter() }
+        ParIntoIter {
+            inner: self.map.into_par_iter(),
+        }
     }
 }
 
@@ -103,18 +91,21 @@ impl<'a, T: Sync, S> IntoParallelIterator for &'a HashSet<T, S> {
     type Iter = ParIter<'a, T>;
 
     fn into_par_iter(self) -> Self::Iter {
-        ParIter { inner: self.map.par_keys() }
+        ParIter {
+            inner: self.map.par_keys(),
+        }
     }
 }
 
-
 /// Collect values from a parallel iterator into a hashset.
 impl<T, S> FromParallelIterator<T> for HashSet<T, S>
-    where T: Eq + Hash + Send,
-          S: BuildHasher + Default + Send
+where
+    T: Eq + Hash + Send,
+    S: BuildHasher + Default + Send,
 {
     fn from_par_iter<P>(par_iter: P) -> Self
-        where P: IntoParallelIterator<Item = T>
+    where
+        P: IntoParallelIterator<Item = T>,
     {
         let mut set = HashSet::default();
         set.par_extend(par_iter);
@@ -122,14 +113,15 @@ impl<T, S> FromParallelIterator<T> for HashSet<T, S>
     }
 }
 
-
 /// Extend a hash set with items from a parallel iterator.
 impl<T, S> ParallelExtend<T> for HashSet<T, S>
-    where T: Eq + Hash + Send,
-          S: BuildHasher + Send
+where
+    T: Eq + Hash + Send,
+    S: BuildHasher + Send,
 {
     fn par_extend<I>(&mut self, par_iter: I)
-        where I: IntoParallelIterator<Item = T>
+    where
+        I: IntoParallelIterator<Item = T>,
     {
         extend(self, par_iter);
     }
@@ -137,11 +129,13 @@ impl<T, S> ParallelExtend<T> for HashSet<T, S>
 
 /// Extend a hash set with copied items from a parallel iterator.
 impl<'a, T, S> ParallelExtend<&'a T> for HashSet<T, S>
-    where T: 'a + Copy + Eq + Hash + Send + Sync,
-          S: BuildHasher + Send
+where
+    T: 'a + Copy + Eq + Hash + Send + Sync,
+    S: BuildHasher + Send,
 {
     fn par_extend<I>(&mut self, par_iter: I)
-        where I: IntoParallelIterator<Item = &'a T>
+    where
+        I: IntoParallelIterator<Item = &'a T>,
     {
         extend(self, par_iter);
     }
@@ -149,10 +143,11 @@ impl<'a, T, S> ParallelExtend<&'a T> for HashSet<T, S>
 
 // This is equal to the normal `HashSet` -- no custom advantage.
 fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
-    where T: Eq + Hash,
-          S: BuildHasher,
-          I: IntoParallelIterator,
-          HashSet<T, S>: Extend<I::Item>
+where
+    T: Eq + Hash,
+    S: BuildHasher,
+    I: IntoParallelIterator,
+    HashSet<T, S>: Extend<I::Item>,
 {
     let (list, len) = super::collect(par_iter);
 
@@ -167,37 +162,38 @@ fn extend<T, S, I>(set: &mut HashSet<T, S>, par_iter: I)
     }
 }
 
-
 impl<T: Send> ParallelIterator for ParIntoIter<T> {
     type Item = T;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         self.inner.map(|(k, _)| k).drive_unindexed(consumer)
     }
 }
 
-
 impl<'a, T: Sync> ParallelIterator for ParIter<'a, T> {
     type Item = &'a T;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         self.inner.drive_unindexed(consumer)
     }
 }
 
-
 impl<'a, T, S> ParallelIterator for ParDifference<'a, T, S>
-    where T: Eq + Hash + Sync,
-          S: BuildHasher + Sync
+where
+    T: Eq + Hash + Sync,
+    S: BuildHasher + Sync,
 {
     type Item = &'a T;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         self.a
             .into_par_iter()
@@ -206,15 +202,16 @@ impl<'a, T, S> ParallelIterator for ParDifference<'a, T, S>
     }
 }
 
-
 impl<'a, T, S> ParallelIterator for ParSymmetricDifference<'a, T, S>
-    where T: Eq + Hash + Sync,
-          S: BuildHasher + Sync
+where
+    T: Eq + Hash + Sync,
+    S: BuildHasher + Sync,
 {
     type Item = &'a T;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         self.a
             .par_difference(self.b)
@@ -223,15 +220,16 @@ impl<'a, T, S> ParallelIterator for ParSymmetricDifference<'a, T, S>
     }
 }
 
-
 impl<'a, T, S> ParallelIterator for ParIntersection<'a, T, S>
-    where T: Eq + Hash + Sync,
-          S: BuildHasher + Sync
+where
+    T: Eq + Hash + Sync,
+    S: BuildHasher + Sync,
 {
     type Item = &'a T;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         self.a
             .into_par_iter()
@@ -240,15 +238,16 @@ impl<'a, T, S> ParallelIterator for ParIntersection<'a, T, S>
     }
 }
 
-
 impl<'a, T, S> ParallelIterator for ParUnion<'a, T, S>
-    where T: Eq + Hash + Sync,
-          S: BuildHasher + Sync
+where
+    T: Eq + Hash + Sync,
+    S: BuildHasher + Sync,
 {
     type Item = &'a T;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         self.a
             .into_par_iter()
@@ -257,12 +256,11 @@ impl<'a, T, S> ParallelIterator for ParUnion<'a, T, S>
     }
 }
 
-
 #[cfg(test)]
 mod test_par_set {
     use super::HashSet;
-    use std::sync::atomic::{AtomicUsize, Ordering};
     use rayon::prelude::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     #[test]
     fn test_disjoint() {
@@ -350,10 +348,12 @@ mod test_par_set {
         assert!(b.insert(3));
 
         let expected = [3, 5, 11, 77];
-        let i = a.par_intersection(&b).map(|x| {
-            assert!(expected.contains(x));
-            1
-        }).sum::<usize>();
+        let i = a
+            .par_intersection(&b)
+            .map(|x| {
+                assert!(expected.contains(x));
+                1
+            }).sum::<usize>();
         assert_eq!(i, expected.len());
     }
 
@@ -372,10 +372,12 @@ mod test_par_set {
         assert!(b.insert(9));
 
         let expected = [1, 5, 11];
-        let i = a.par_difference(&b).map(|x| {
-            assert!(expected.contains(x));
-            1
-        }).sum::<usize>();
+        let i = a
+            .par_difference(&b)
+            .map(|x| {
+                assert!(expected.contains(x));
+                1
+            }).sum::<usize>();
         assert_eq!(i, expected.len());
     }
 
@@ -397,10 +399,12 @@ mod test_par_set {
         assert!(b.insert(22));
 
         let expected = [-2, 1, 5, 11, 14, 22];
-        let i = a.par_symmetric_difference(&b).map(|x| {
-            assert!(expected.contains(x));
-            1
-        }).sum::<usize>();
+        let i = a
+            .par_symmetric_difference(&b)
+            .map(|x| {
+                assert!(expected.contains(x));
+                1
+            }).sum::<usize>();
         assert_eq!(i, expected.len());
     }
 
@@ -426,10 +430,12 @@ mod test_par_set {
         assert!(b.insert(19));
 
         let expected = [-2, 1, 3, 5, 9, 11, 13, 16, 19, 24];
-        let i = a.par_union(&b).map(|x| {
-            assert!(expected.contains(x));
-            1
-        }).sum::<usize>();
+        let i = a
+            .par_union(&b)
+            .map(|x| {
+                assert!(expected.contains(x));
+                1
+            }).sum::<usize>();
         assert_eq!(i, expected.len());
     }
 

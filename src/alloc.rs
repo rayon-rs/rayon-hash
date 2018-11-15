@@ -37,6 +37,7 @@ fn layout_err() -> LayoutErr {
 /// use specific allocators with looser requirements.)
 // #[stable(feature = "alloc_layout", since = "1.28.0")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+// #[lang = "alloc_layout"]
 pub(crate) struct Layout {
     inner: alloc::Layout,
 }
@@ -45,6 +46,8 @@ impl Layout {
     /// Constructs a `Layout` from a given `size` and `align`,
     /// or returns `LayoutErr` if either of the following conditions
     /// are not met:
+    ///
+    /// * `align` must not be zero,
     ///
     /// * `align` must be a power of two,
     ///
@@ -102,7 +105,7 @@ impl Layout {
     /// to be less than or equal to the alignment of the starting
     /// address for the whole allocated block of memory. One way to
     /// satisfy this constraint is to ensure `align <= self.align()`.
-    // #[unstable(feature = "allocator_api", issue = "32838")]
+    // #[unstable(feature = "alloc_layout_extra", issue = "55724")]
     #[inline]
     pub(crate) fn padding_needed_for(&self, align: usize) -> usize {
         let len = self.size();
@@ -128,7 +131,7 @@ impl Layout {
 
         let len_rounded_up = len.wrapping_add(align).wrapping_sub(1)
             & !align.wrapping_sub(1);
-        return len_rounded_up.wrapping_sub(len);
+        len_rounded_up.wrapping_sub(len)
     }
 
     /// Creates a layout describing the record for `n` instances of
@@ -139,7 +142,7 @@ impl Layout {
     /// of each element in the array.
     ///
     /// On arithmetic overflow, returns `LayoutErr`.
-    // #[unstable(feature = "allocator_api", issue = "32838")]
+    // #[unstable(feature = "alloc_layout_extra", issue = "55724")]
     #[inline]
     pub(crate) fn repeat(&self, n: usize) -> Result<(Self, usize), LayoutErr> {
         let padded_size = self.size().checked_add(self.padding_needed_for(self.align()))
@@ -159,13 +162,16 @@ impl Layout {
     /// will be properly aligned. Note that the result layout will
     /// satisfy the alignment properties of both `self` and `next`.
     ///
+    /// The resulting layout will be the same as that of a C struct containing
+    /// two fields with the layouts of `self` and `next`, in that order.
+    ///
     /// Returns `Some((k, offset))`, where `k` is layout of the concatenated
     /// record and `offset` is the relative location, in bytes, of the
     /// start of the `next` embedded within the concatenated record
     /// (assuming that the record itself starts at offset 0).
     ///
     /// On arithmetic overflow, returns `LayoutErr`.
-    // #[unstable(feature = "allocator_api", issue = "32838")]
+    // #[unstable(feature = "alloc_layout_extra", issue = "55724")]
     #[inline]
     pub(crate) fn extend(&self, next: Self) -> Result<(Self, usize), LayoutErr> {
         let new_align = cmp::max(self.align(), next.align());
@@ -183,7 +189,7 @@ impl Layout {
     /// Creates a layout describing the record for a `[T; n]`.
     ///
     /// On arithmetic overflow, returns `LayoutErr`.
-    // #[unstable(feature = "allocator_api", issue = "32838")]
+    // #[unstable(feature = "alloc_layout_extra", issue = "55724")]
     #[inline]
     pub(crate) fn array<T>(n: usize) -> Result<Self, LayoutErr> {
         Layout::new::<T>()
@@ -210,7 +216,6 @@ impl From<Layout> for alloc::Layout {
 }
 
 /// Augments `AllocErr` with a CapacityOverflow variant.
-// FIXME: should this be in libcore or liballoc?
 #[derive(Clone, PartialEq, Eq, Debug)]
 // #[unstable(feature = "try_reserve", reason = "new API", issue="48043")]
 pub enum CollectionAllocErr {

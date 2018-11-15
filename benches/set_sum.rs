@@ -1,23 +1,27 @@
 #![feature(test)]
 
-extern crate test;
 extern crate rand;
+extern crate rand_xorshift;
 extern crate rayon;
 extern crate rayon_hash;
+extern crate test;
 
-use rand::{Rng, SeedableRng, XorShiftRng};
 use rand::distributions::Standard;
-use std::collections::HashSet as StdHashSet;
-use rayon_hash::HashSet as RayonHashSet;
-use std::iter::FromIterator;
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 use rayon::prelude::*;
+use rayon_hash::HashSet as RayonHashSet;
+use std::collections::HashSet as StdHashSet;
+use std::iter::FromIterator;
 use test::Bencher;
-
 
 fn default_set<C: FromIterator<u32>>(n: usize) -> C {
     let mut seed = <XorShiftRng as SeedableRng>::Seed::default();
     (0..).zip(seed.as_mut()).for_each(|(i, x)| *x = i);
-    XorShiftRng::from_seed(seed).sample_iter(&Standard).take(n).collect()
+    XorShiftRng::from_seed(seed)
+        .sample_iter(&Standard)
+        .take(n)
+        .collect()
 }
 
 macro_rules! bench_set_sum {
@@ -32,7 +36,7 @@ macro_rules! bench_set_sum {
                 assert_eq!(s, sum);
             })
         }
-    }
+    };
 }
 
 bench_set_sum!{std_set_sum_serial, StdHashSet<_>, iter}

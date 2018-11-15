@@ -13,10 +13,10 @@ split into parallel jobs.  With the custom types in `rayon-hash`, we can
 instead read the raw hash table directly, for much better performance.
 
 ```text
-test rayon_set_sum_parallel ... bench:   1,077,602 ns/iter (+/- 50,610)
-test rayon_set_sum_serial   ... bench:   6,363,125 ns/iter (+/- 101,513)
-test std_set_sum_parallel   ... bench:   8,519,683 ns/iter (+/- 219,785)
-test std_set_sum_serial     ... bench:   6,295,263 ns/iter (+/- 98,600)
+test rayon_set_sum_parallel ... bench:   1,035,111 ns/iter (+/- 57,327)
+test rayon_set_sum_serial   ... bench:   7,500,179 ns/iter (+/- 96,918)
+test std_set_sum_parallel   ... bench:   6,799,231 ns/iter (+/- 94,154)
+test std_set_sum_serial     ... bench:   7,634,174 ns/iter (+/- 84,806)
 ```
 
 This crate currently requires `rustc 1.28.0` or greater.
@@ -45,7 +45,7 @@ RUSTFLAGS='--cfg rayon_hash_unstable' cargo build
 Note that this must not only be done for your crate, but for any crate that
 depends on your crate.  This infectious nature is intentional, as it serves as
 a reminder that you are outside of the normal semver guarantees.  These
-features also require a nightly Rust compiler.
+features may also require a nightly Rust compiler.
 
 When such features are stabilized in the standard library, we will remove the
 `rayon_hash_unstable` guard here too.
