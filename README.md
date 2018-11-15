@@ -45,7 +45,7 @@ RUSTFLAGS='--cfg rayon_hash_unstable' cargo build
 Note that this must not only be done for your crate, but for any crate that
 depends on your crate.  This infectious nature is intentional, as it serves as
 a reminder that you are outside of the normal semver guarantees.  These
-features also require a nightly Rust compiler.
+features may also require a nightly Rust compiler.
 
 When such features are stabilized in the standard library, we will remove the
 `rayon_hash_unstable` guard here too.
