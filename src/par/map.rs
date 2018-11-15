@@ -1,14 +1,12 @@
 /// Rayon extensions to `HashMap`
-
-use rayon::iter::{ParallelIterator, IntoParallelIterator, FromParallelIterator, ParallelExtend};
-use std::hash::{Hash, BuildHasher};
+use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelExtend, ParallelIterator};
+use std::hash::{BuildHasher, Hash};
 
 use super::table;
 use HashMap;
 
 pub use self::table::{ParIntoIter, ParIter, ParIterMut};
 pub use self::table::{ParKeys, ParValues, ParValuesMut};
-
 
 impl<K: Sync, V, S> HashMap<K, V, S> {
     pub fn par_keys(&self) -> ParKeys<K, V> {
@@ -29,16 +27,17 @@ impl<K, V: Send, S> HashMap<K, V, S> {
 }
 
 impl<K, V, S> HashMap<K, V, S>
-    where K: Eq + Hash + Sync,
-          V: PartialEq + Sync,
-          S: BuildHasher + Sync
+where
+    K: Eq + Hash + Sync,
+    V: PartialEq + Sync,
+    S: BuildHasher + Sync,
 {
     pub fn par_eq(&self, other: &Self) -> bool {
-        self.len() == other.len() &&
-        self.into_par_iter().all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
+        self.len() == other.len() && self
+            .into_par_iter()
+            .all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
     }
 }
-
 
 impl<K: Send, V: Send, S> IntoParallelIterator for HashMap<K, V, S> {
     type Item = (K, V);
@@ -67,18 +66,19 @@ impl<'a, K: Sync, V: Send, S> IntoParallelIterator for &'a mut HashMap<K, V, S> 
     }
 }
 
-
 /// Collect (key, value) pairs from a parallel iterator into a
 /// hashmap. If multiple pairs correspond to the same key, then the
 /// ones produced earlier in the parallel iterator will be
 /// overwritten, just as with a sequential iterator.
 impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
-    where K: Eq + Hash + Send,
-          V: Send,
-          S: BuildHasher + Default + Send
+where
+    K: Eq + Hash + Send,
+    V: Send,
+    S: BuildHasher + Default + Send,
 {
     fn from_par_iter<P>(par_iter: P) -> Self
-        where P: IntoParallelIterator<Item = (K, V)>
+    where
+        P: IntoParallelIterator<Item = (K, V)>,
     {
         let mut map = HashMap::default();
         map.par_extend(par_iter);
@@ -86,15 +86,16 @@ impl<K, V, S> FromParallelIterator<(K, V)> for HashMap<K, V, S>
     }
 }
 
-
 /// Extend a hash map with items from a parallel iterator.
 impl<K, V, S> ParallelExtend<(K, V)> for HashMap<K, V, S>
-    where K: Eq + Hash + Send,
-          V: Send,
-          S: BuildHasher + Send
+where
+    K: Eq + Hash + Send,
+    V: Send,
+    S: BuildHasher + Send,
 {
     fn par_extend<I>(&mut self, par_iter: I)
-        where I: IntoParallelIterator<Item = (K, V)>
+    where
+        I: IntoParallelIterator<Item = (K, V)>,
     {
         extend(self, par_iter);
     }
@@ -102,12 +103,14 @@ impl<K, V, S> ParallelExtend<(K, V)> for HashMap<K, V, S>
 
 /// Extend a hash map with copied items from a parallel iterator.
 impl<'a, K, V, S> ParallelExtend<(&'a K, &'a V)> for HashMap<K, V, S>
-    where K: Copy + Eq + Hash + Send + Sync,
-          V: Copy + Send + Sync,
-          S: BuildHasher + Send
+where
+    K: Copy + Eq + Hash + Send + Sync,
+    V: Copy + Send + Sync,
+    S: BuildHasher + Send,
 {
     fn par_extend<I>(&mut self, par_iter: I)
-        where I: IntoParallelIterator<Item = (&'a K, &'a V)>
+    where
+        I: IntoParallelIterator<Item = (&'a K, &'a V)>,
     {
         extend(self, par_iter);
     }
@@ -115,10 +118,11 @@ impl<'a, K, V, S> ParallelExtend<(&'a K, &'a V)> for HashMap<K, V, S>
 
 // This is equal to the normal `HashMap` -- no custom advantage.
 fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
-    where K: Eq + Hash,
-          S: BuildHasher,
-          I: IntoParallelIterator,
-          HashMap<K, V, S>: Extend<I::Item>
+where
+    K: Eq + Hash,
+    S: BuildHasher,
+    I: IntoParallelIterator,
+    HashMap<K, V, S>: Extend<I::Item>,
 {
     let (list, len) = super::collect(par_iter);
 
@@ -133,13 +137,12 @@ fn extend<K, V, S, I>(map: &mut HashMap<K, V, S>, par_iter: I)
     }
 }
 
-
 #[cfg(test)]
 mod test_par_map {
     use super::HashMap;
-    use std::sync::atomic::{AtomicUsize, Ordering};
-    use std::hash::{Hash, Hasher};
     use rayon::prelude::*;
+    use std::hash::{Hash, Hasher};
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     struct Dropable<'a> {
         k: usize,
@@ -150,7 +153,10 @@ mod test_par_map {
         fn new(k: usize, counter: &AtomicUsize) -> Dropable {
             counter.fetch_add(1, Ordering::Relaxed);
 
-            Dropable { k: k, counter: counter }
+            Dropable {
+                k: k,
+                counter: counter,
+            }
         }
     }
 
@@ -168,7 +174,8 @@ mod test_par_map {
 
     impl<'a> Hash for Dropable<'a> {
         fn hash<H>(&self, state: &mut H)
-            where H: Hasher
+        where
+            H: Hasher,
         {
             self.k.hash(state)
         }
@@ -213,7 +220,8 @@ mod test_par_map {
             assert_eq!(value.load(Ordering::Relaxed), 100);
 
             // retain only half
-            let _v: Vec<_> = hm.into_par_iter()
+            let _v: Vec<_> = hm
+                .into_par_iter()
                 .filter(|&(ref key, _)| key.k < 50)
                 .collect();
 
@@ -243,7 +251,7 @@ mod test_par_map {
     fn test_iterate() {
         let mut m = HashMap::with_capacity(4);
         for i in 0..32 {
-            assert!(m.insert(i, i*2).is_none());
+            assert!(m.insert(i, i * 2).is_none());
         }
         assert_eq!(m.len(), 32);
 
@@ -282,9 +290,7 @@ mod test_par_map {
     fn test_values_mut() {
         let vec = vec![(1, 1), (2, 2), (3, 3)];
         let mut map: HashMap<_, _> = vec.into_par_iter().collect();
-        map.par_values_mut().for_each(|value| {
-            *value = (*value) * 2
-        });
+        map.par_values_mut().for_each(|value| *value = (*value) * 2);
         let values: Vec<_> = map.par_values().cloned().collect();
         assert_eq!(values.len(), 3);
         assert!(values.contains(&2));

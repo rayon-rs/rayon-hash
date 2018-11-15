@@ -1,13 +1,11 @@
 /// Rayon extensions to `RawTable`
-
 use std::marker;
 use std::ptr;
 
-use rayon::prelude::*;
 use rayon::iter::plumbing::*;
+use rayon::prelude::*;
 
-use std_hash::table::{RawTable, RawBucket};
-
+use std_hash::table::{RawBucket, RawTable};
 
 struct SplitBuckets<'a, K, V> {
     bucket: RawBucket<K, V>,
@@ -56,7 +54,6 @@ impl<'a, K, V> Iterator for SplitBuckets<'a, K, V> {
     }
 }
 
-
 /// Parallel iterator over shared references to entries in a map.
 pub struct ParIter<'a, K: 'a, V: 'a> {
     table: &'a RawTable<K, V>,
@@ -75,7 +72,8 @@ impl<'a, K: Sync, V: Sync> ParallelIterator for ParIter<'a, K, V> {
     type Item = (&'a K, &'a V);
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         let buckets = SplitBuckets::new(self.table);
         let producer = ParIterProducer::from(buckets);
@@ -103,17 +101,16 @@ impl<'a, K: Sync, V: Sync> UnindexedProducer for ParIterProducer<'a, K, V> {
     }
 
     fn fold_with<F>(self, folder: F) -> F
-        where F: Folder<Self::Item>
+    where
+        F: Folder<Self::Item>,
     {
-        let iter = self.iter
-            .map(|bucket| unsafe {
-                     let pair_ptr = bucket.pair();
-                     (&(*pair_ptr).0, &(*pair_ptr).1)
-                 });
+        let iter = self.iter.map(|bucket| unsafe {
+            let pair_ptr = bucket.pair();
+            (&(*pair_ptr).0, &(*pair_ptr).1)
+        });
         folder.consume_iter(iter)
     }
 }
-
 
 /// Parallel iterator over shared references to keys in a map.
 pub struct ParKeys<'a, K: 'a, V: 'a> {
@@ -132,7 +129,8 @@ impl<'a, K: Sync, V> ParallelIterator for ParKeys<'a, K, V> {
     type Item = &'a K;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         let buckets = SplitBuckets::new(self.table);
         let producer = ParKeysProducer::from(buckets);
@@ -160,17 +158,16 @@ impl<'a, K: Sync, V> UnindexedProducer for ParKeysProducer<'a, K, V> {
     }
 
     fn fold_with<F>(self, folder: F) -> F
-        where F: Folder<Self::Item>
+    where
+        F: Folder<Self::Item>,
     {
-        let iter = self.iter
-            .map(|bucket| unsafe {
-                     let pair_ptr = bucket.pair();
-                     &(*pair_ptr).0
-                 });
+        let iter = self.iter.map(|bucket| unsafe {
+            let pair_ptr = bucket.pair();
+            &(*pair_ptr).0
+        });
         folder.consume_iter(iter)
     }
 }
-
 
 /// Parallel iterator over shared references to values in a map.
 pub struct ParValues<'a, K: 'a, V: 'a> {
@@ -189,7 +186,8 @@ impl<'a, K, V: Sync> ParallelIterator for ParValues<'a, K, V> {
     type Item = &'a V;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         let buckets = SplitBuckets::new(self.table);
         let producer = ParValuesProducer::from(buckets);
@@ -217,17 +215,16 @@ impl<'a, K, V: Sync> UnindexedProducer for ParValuesProducer<'a, K, V> {
     }
 
     fn fold_with<F>(self, folder: F) -> F
-        where F: Folder<Self::Item>
+    where
+        F: Folder<Self::Item>,
     {
-        let iter = self.iter
-            .map(|bucket| unsafe {
-                     let pair_ptr = bucket.pair();
-                     &(*pair_ptr).1
-                 });
+        let iter = self.iter.map(|bucket| unsafe {
+            let pair_ptr = bucket.pair();
+            &(*pair_ptr).1
+        });
         folder.consume_iter(iter)
     }
 }
-
 
 /// Parallel iterator over mutable references to entries in a map.
 pub struct ParIterMut<'a, K: 'a, V: 'a> {
@@ -249,7 +246,8 @@ impl<'a, K: Sync, V: Send> ParallelIterator for ParIterMut<'a, K, V> {
     type Item = (&'a K, &'a mut V);
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         let buckets = SplitBuckets::new(self.table);
         let producer = ParIterMutProducer::from(buckets);
@@ -265,7 +263,10 @@ struct ParIterMutProducer<'a, K: 'a, V: 'a> {
 
 impl<'a, K, V> From<SplitBuckets<'a, K, V>> for ParIterMutProducer<'a, K, V> {
     fn from(iter: SplitBuckets<'a, K, V>) -> Self {
-        Self { iter, marker: marker::PhantomData }
+        Self {
+            iter,
+            marker: marker::PhantomData,
+        }
     }
 }
 
@@ -279,17 +280,16 @@ impl<'a, K: Sync, V: Send> UnindexedProducer for ParIterMutProducer<'a, K, V> {
     }
 
     fn fold_with<F>(self, folder: F) -> F
-        where F: Folder<Self::Item>
+    where
+        F: Folder<Self::Item>,
     {
-        let iter = self.iter
-            .map(|bucket| unsafe {
-                     let pair_ptr = bucket.pair();
-                     (&(*pair_ptr).0, &mut (*pair_ptr).1)
-                 });
+        let iter = self.iter.map(|bucket| unsafe {
+            let pair_ptr = bucket.pair();
+            (&(*pair_ptr).0, &mut (*pair_ptr).1)
+        });
         folder.consume_iter(iter)
     }
 }
-
 
 /// Parallel iterator over mutable references to values in a map.
 pub struct ParValuesMut<'a, K: 'a, V: 'a> {
@@ -308,7 +308,8 @@ impl<'a, K, V: Send> ParallelIterator for ParValuesMut<'a, K, V> {
     type Item = &'a mut V;
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         let buckets = SplitBuckets::new(self.table);
         let producer = ParValuesMutProducer::from(buckets);
@@ -324,7 +325,10 @@ struct ParValuesMutProducer<'a, K: 'a, V: 'a> {
 
 impl<'a, K, V> From<SplitBuckets<'a, K, V>> for ParValuesMutProducer<'a, K, V> {
     fn from(iter: SplitBuckets<'a, K, V>) -> Self {
-        Self { iter, marker: marker::PhantomData }
+        Self {
+            iter,
+            marker: marker::PhantomData,
+        }
     }
 }
 
@@ -338,17 +342,16 @@ impl<'a, K, V: Send> UnindexedProducer for ParValuesMutProducer<'a, K, V> {
     }
 
     fn fold_with<F>(self, folder: F) -> F
-        where F: Folder<Self::Item>
+    where
+        F: Folder<Self::Item>,
     {
-        let iter = self.iter
-            .map(|bucket| unsafe {
-                     let pair_ptr = bucket.pair();
-                     &mut (*pair_ptr).1
-                 });
+        let iter = self.iter.map(|bucket| unsafe {
+            let pair_ptr = bucket.pair();
+            &mut (*pair_ptr).1
+        });
         folder.consume_iter(iter)
     }
 }
-
 
 /// Parallel iterator over the entries in a map, consuming it.
 pub struct ParIntoIter<K, V> {
@@ -368,11 +371,14 @@ impl<K: Send, V: Send> ParallelIterator for ParIntoIter<K, V> {
     type Item = (K, V);
 
     fn drive_unindexed<C>(self, consumer: C) -> C::Result
-        where C: UnindexedConsumer<Self::Item>
+    where
+        C: UnindexedConsumer<Self::Item>,
     {
         // Pre-set the map size to zero, indicating all items drained.
         let mut table = self.table;
-        unsafe { table.set_size(0); }
+        unsafe {
+            table.set_size(0);
+        }
 
         let buckets = SplitBuckets::new(&table);
         let producer = ParIntoIterProducer::from(buckets);
@@ -403,14 +409,13 @@ impl<'a, K: Send, V: Send> UnindexedProducer for ParIntoIterProducer<'a, K, V> {
     }
 
     fn fold_with<F>(mut self, folder: F) -> F
-        where F: Folder<Self::Item>
+    where
+        F: Folder<Self::Item>,
     {
-        let iter = self.iter
-            .by_ref()
-            .map(|bucket| unsafe {
-                     bucket.set_empty();
-                     ptr::read(bucket.pair())
-                 });
+        let iter = self.iter.by_ref().map(|bucket| unsafe {
+            bucket.set_empty();
+            ptr::read(bucket.pair())
+        });
         folder.consume_iter(iter)
     }
 }
