@@ -1,12 +1,14 @@
 #![feature(test)]
 
 extern crate rand;
+extern crate rand_xorshift;
 extern crate rayon;
 extern crate rayon_hash;
 extern crate test;
 
 use rand::distributions::Standard;
-use rand::{Rng, SeedableRng, XorShiftRng};
+use rand::{Rng, SeedableRng};
+use rand_xorshift::XorShiftRng;
 use rayon::prelude::*;
 use rayon_hash::HashSet as RayonHashSet;
 use std::collections::HashSet as StdHashSet;

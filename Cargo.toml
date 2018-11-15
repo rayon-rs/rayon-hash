@@ -14,4 +14,5 @@ readme = "README.md"
 rayon = "1.0"
 
 [dev-dependencies]
-rand = "0.5"
+rand = "0.6"
+rand_xorshift = "0.1"
