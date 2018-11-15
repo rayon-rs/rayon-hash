@@ -23,7 +23,7 @@ use std::ptr::NonNull;
 /// its owning Unique.
 ///
 /// If you're uncertain of whether it's correct to use `Unique` for your purposes,
-/// consider using `Shared`, which has weaker semantics.
+/// consider using `NonNull`, which has weaker semantics.
 ///
 /// Unlike `*mut T`, the pointer must always be non-null, even if the pointer
 /// is never dereferenced. This is so that enums may use this forbidden value
@@ -32,6 +32,11 @@ use std::ptr::NonNull;
 ///
 /// Unlike `*mut T`, `Unique<T>` is covariant over `T`. This should always be correct
 /// for any type which upholds Unique's aliasing requirements.
+// #[unstable(feature = "ptr_internals", issue = "0",
+//            reason = "use NonNull instead and consider PhantomData<T> \
+//                      (if you also use #[may_dangle]), Send, and/or Sync")]
+// #[doc(hidden)]
+#[repr(transparent)]
 pub(crate) struct Unique<T: ?Sized> {
     pointer: NonNull<T>,
     // NOTE: this marker has no consequences for variance, but is necessary
@@ -42,6 +47,7 @@ pub(crate) struct Unique<T: ?Sized> {
     _marker: PhantomData<T>,
 }
 
+// #[unstable(feature = "ptr_internals", issue = "0")]
 impl<T: ?Sized> fmt::Debug for Unique<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Pointer::fmt(&self.as_ptr(), f)
@@ -52,14 +58,17 @@ impl<T: ?Sized> fmt::Debug for Unique<T> {
 /// reference is unaliased. Note that this aliasing invariant is
 /// unenforced by the type system; the abstraction using the
 /// `Unique` must enforce it.
+// #[unstable(feature = "ptr_internals", issue = "0")]
 unsafe impl<T: Send + ?Sized> Send for Unique<T> { }
 
 /// `Unique` pointers are `Sync` if `T` is `Sync` because the data they
 /// reference is unaliased. Note that this aliasing invariant is
 /// unenforced by the type system; the abstraction using the
 /// `Unique` must enforce it.
+// #[unstable(feature = "ptr_internals", issue = "0")]
 unsafe impl<T: Sync + ?Sized> Sync for Unique<T> { }
 
+// #[unstable(feature = "ptr_internals", issue = "0")]
 impl<T: ?Sized> Unique<T> {
     /// Creates a new `Unique`.
     ///
@@ -76,10 +85,12 @@ impl<T: ?Sized> Unique<T> {
     }
 }
 
+// #[unstable(feature = "ptr_internals", issue = "0")]
 impl<T: ?Sized> Clone for Unique<T> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
+// #[unstable(feature = "ptr_internals", issue = "0")]
 impl<T: ?Sized> Copy for Unique<T> { }
