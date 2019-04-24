@@ -4,7 +4,7 @@ use rayon::iter::{FromParallelIterator, IntoParallelIterator, ParallelExtend, Pa
 use std::hash::{BuildHasher, Hash};
 
 use super::map;
-use HashSet;
+use crate::HashSet;
 
 pub struct ParIntoIter<T: Send> {
     inner: map::ParIntoIter<T, ()>,

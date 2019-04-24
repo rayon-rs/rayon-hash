@@ -5,7 +5,7 @@ use std::ptr;
 use rayon::iter::plumbing::*;
 use rayon::prelude::*;
 
-use std_hash::table::{RawBucket, RawTable};
+use crate::std_hash::table::{RawBucket, RawTable};
 
 struct SplitBuckets<'a, K, V> {
     bucket: RawBucket<K, V>,
