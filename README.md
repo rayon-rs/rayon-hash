@@ -3,23 +3,35 @@
 [![rayon-hash crate](https://img.shields.io/crates/v/rayon-hash.svg)](https://crates.io/crates/rayon-hash)
 [![rayon-hash documentation](https://docs.rs/rayon-hash/badge.svg)](https://docs.rs/rayon-hash)
 [![Travis Status](https://travis-ci.org/rayon-rs/rayon-hash.svg?branch=master)](https://travis-ci.org/rayon-rs/rayon-hash)
+![deprecated](https://img.shields.io/badge/maintenance-deprecated-red.svg)
 
-The `rayon-hash` crate duplicates the standard `HashMap` and `HashSet`, adding
-native support for Rayon parallel iterators.
+This crate is now **deprecated**, because the [new implementation in `std`]
+also exists as the [`hashbrown`] crate with its own "rayon" feature.
+
+[new implementation in `std`]: https://github.com/rust-lang/rust/pull/58623
+[`hashbrown`]: https://crates.io/crates/hashbrown
+
+The `rayon-hash` crate duplicates the _former_ standard `HashMap` and
+`HashSet`, adding native support for Rayon parallel iterators.
 
 Rayon does provide iterators for these standard types already, but since it
 can't access internal fields, it has to collect to an intermediate vector to be
 split into parallel jobs.  With the custom types in `rayon-hash`, we can
 instead read the raw hash table directly, for much better performance.
 
+Benchmarks using `rustc 1.36.0-nightly (e938c2b9a 2019-04-23)`, before the
+`hashbrown` implementation had merged into `std`:
+
 ```text
-test rayon_set_sum_parallel ... bench:   1,035,111 ns/iter (+/- 57,327)
-test rayon_set_sum_serial   ... bench:   7,500,179 ns/iter (+/- 96,918)
-test std_set_sum_parallel   ... bench:   6,799,231 ns/iter (+/- 94,154)
-test std_set_sum_serial     ... bench:   7,634,174 ns/iter (+/- 84,806)
+test hashbrown_set_sum_parallel  ... bench:     617,405 ns/iter (+/- 58,565)
+test hashbrown_set_sum_serial    ... bench:   2,655,882 ns/iter (+/- 15,104)
+test rayon_hash_set_sum_parallel ... bench:   1,368,058 ns/iter (+/- 75,984)
+test rayon_hash_set_sum_serial   ... bench:   7,558,175 ns/iter (+/- 190,545)
+test std_hash_set_sum_parallel   ... bench:   6,869,490 ns/iter (+/- 47,897)
+test std_hash_set_sum_serial     ... bench:   7,591,704 ns/iter (+/- 154,438)
 ```
 
-This crate currently requires `rustc 1.28.0` or greater.
+This crate currently requires `rustc 1.31.0` or greater.
 
 ## Known limitations
 
