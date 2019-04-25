@@ -1,14 +1,15 @@
 [package]
 authors = ["Josh Stone <cuviper@gmail.com>"]
 name = "rayon-hash"
-version = "0.4.1"
+version = "0.5.0"
 repository = "https://github.com/rayon-rs/rayon-hash"
 documentation = "https://docs.rs/rayon-hash/"
 keywords = ["parallel", "iterator", "hash", "map", "set"]
 categories = ["concurrency", "data-structures"]
-description = "HashMap and HashSet with support for Rayon parallel iterators"
+description = "(deprecated) HashMap and HashSet with support for Rayon parallel iterators"
 license = "Apache-2.0/MIT"
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
 rayon = "1.0"
@@ -16,3 +17,10 @@ rayon = "1.0"
 [dev-dependencies]
 rand = "0.6"
 rand_xorshift = "0.1"
+
+[dev-dependencies.hashbrown]
+version = "0.3.0"
+features = ["rayon"]
+
+[badges]
+maintenance = { status = "deprecated" }

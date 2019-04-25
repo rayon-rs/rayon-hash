@@ -5,6 +5,8 @@ extern crate rayon;
 #[cfg(test)] extern crate rand;
 
 mod alloc;
+#[cfg(rayon_hash_unstable)]
+mod intrinsics;
 mod ptr;
 
 // #[stable(feature = "rust1", since = "1.0.0")]
